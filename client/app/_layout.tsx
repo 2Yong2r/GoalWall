@@ -29,6 +29,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="goal-detail" options={{ title: "" }} />
             <Stack.Screen name="task-detail" options={{ title: "" }} />
+            <Stack.Screen name="version-history" options={{ title: "" }} />
           </Stack>
           <Toast />
         </GestureHandlerRootView>

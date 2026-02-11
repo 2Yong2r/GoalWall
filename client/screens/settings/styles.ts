@@ -42,6 +42,11 @@ export const createStyles = (theme: Theme) => {
       alignItems: 'center',
       flex: 1,
     },
+    menuItemRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+    },
     menuItemIcon: {
       width: 36,
       height: 36,

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useSafeRouter } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
 import { ThemedText } from '@/components/ThemedText';
@@ -8,10 +9,48 @@ import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { createStyles } from './styles';
 
+interface VersionData {
+  version: string;
+  lastUpdated: string;
+  totalFiles: number;
+  thresholds: {
+    minorVersionFiles: number;
+    majorVersionFiles: number;
+  };
+  history: Array<{
+    version: string;
+    releaseDate: string;
+    description: string;
+    filesModified: number;
+    changeType: string;
+  }>;
+}
+
 export default function SettingsScreen() {
   const { theme } = useTheme();
   const styles = createStyles(theme);
   const router = useSafeRouter();
+  const [version, setVersion] = useState<string>('加载中...');
+
+  // 获取版本信息
+  const fetchVersion = useCallback(async () => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/version`);
+      const result = await response.json();
+      if (result.success) {
+        setVersion(result.data.version);
+      }
+    } catch (error) {
+      console.error('Failed to fetch version:', error);
+      setVersion('未知');
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchVersion();
+    }, [fetchVersion])
+  );
 
   const menuItems = [
     {
@@ -101,16 +140,22 @@ export default function SettingsScreen() {
               应用信息
             </ThemedText>
 
-            <View style={[styles.menuItem, styles.menuItemStatic]}>
+            <TouchableOpacity
+              style={[styles.menuItem, styles.menuItemStatic]}
+              onPress={() => router.push('/version-history')}
+            >
               <View style={styles.menuItemLeft}>
                 <ThemedText variant="body" color={theme.textSecondary}>
                   版本
                 </ThemedText>
               </View>
-              <ThemedText variant="body" color={theme.textMuted}>
-                1.0.0
-              </ThemedText>
-            </View>
+              <View style={styles.menuItemRight}>
+                <ThemedText variant="body" color={theme.textMuted}>
+                  {version}
+                </ThemedText>
+                <FontAwesome6 name="chevron-right" size={16} color={theme.textMuted} />
+              </View>
+            </TouchableOpacity>
           </ThemedView>
         </ScrollView>
       </View>
