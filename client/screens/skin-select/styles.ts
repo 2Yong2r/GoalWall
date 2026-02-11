@@ -65,18 +65,5 @@ export const createStyles = (theme: Theme) => {
       justifyContent: 'center',
       alignItems: 'center',
     },
-    colorPreview: {
-      flexDirection: 'row',
-      gap: Spacing.sm,
-      marginTop: Spacing.sm,
-      paddingTop: Spacing.sm,
-      borderTopWidth: 1,
-      borderTopColor: theme.border,
-    },
-    colorDot: {
-      width: 24,
-      height: 24,
-      borderRadius: BorderRadius.full,
-    },
   });
 };

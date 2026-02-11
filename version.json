@@ -1,12 +1,19 @@
 {
-  "version": "0.4.1",
-  "lastUpdated": "2026-02-11T12:10:00Z",
+  "version": "0.4.2",
+  "lastUpdated": "2026-02-11T12:20:00Z",
   "totalFiles": 61,
   "thresholds": {
     "minorVersionFiles": 5,
     "majorVersionFiles": 20
   },
   "history": [
+    {
+      "version": "0.4.2",
+      "releaseDate": "2026-02-11T12:20:00Z",
+      "description": "优化皮肤选择界面：移除皮肤卡片底部的颜色预览条",
+      "filesModified": 2,
+      "changeType": "patch"
+    },
     {
       "version": "0.4.1",
       "releaseDate": "2026-02-11T12:10:00Z",

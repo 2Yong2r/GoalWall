@@ -22,16 +22,10 @@ export default function SkinSelectScreen() {
     router.back();
   };
 
-  // 获取皮肤预览色块
-  const getSkinPreview = (skinId: string) => {
+  // 获取皮肤主色
+  const getSkinPrimaryColor = (skinId: string) => {
     const skinColors = Colors[skinId as keyof typeof Colors] as any;
-    if (!skinColors) return null;
-
-    return {
-      primary: skinColors.primary,
-      accent: skinColors.accent,
-      background: skinColors.backgroundRoot,
-    };
+    return skinColors?.primary;
   };
 
   return (
@@ -46,8 +40,8 @@ export default function SkinSelectScreen() {
 
         <ScrollView contentContainerStyle={styles.content}>
           {availableSkins.map((skin) => {
-            const preview = getSkinPreview(skin.id);
-            if (!preview) return null;
+            const primaryColor = getSkinPrimaryColor(skin.id);
+            if (!primaryColor) return null;
 
             const isSelected = skin.id === skinType;
 
@@ -65,7 +59,7 @@ export default function SkinSelectScreen() {
                   {/* 皮肤图标 */}
                   <View style={[
                     styles.skinIcon,
-                    { backgroundColor: preview.primary }
+                    { backgroundColor: primaryColor }
                   ]}>
                     <ThemedText variant="h3" style={styles.skinIconText}>
                       {skin.icon}
@@ -89,14 +83,6 @@ export default function SkinSelectScreen() {
                     <FontAwesome6 name="check" size={16} color={theme.buttonPrimaryText} />
                   </View>
                 )}
-
-                {/* 颜色预览条 */}
-                <View style={styles.colorPreview}>
-                  <View style={[styles.colorDot, { backgroundColor: preview.primary }]} />
-                  <View style={[styles.colorDot, { backgroundColor: preview.accent }]} />
-                  <View style={[styles.colorDot, { backgroundColor: theme.success }]} />
-                  <View style={[styles.colorDot, { backgroundColor: theme.error }]} />
-                </View>
               </TouchableOpacity>
             );
           })}
