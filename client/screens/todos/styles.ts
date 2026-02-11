@@ -132,5 +132,76 @@ export const createStyles = (theme: Theme) => {
       width: 80,
       height: '100%',
     },
+    // 日历样式
+    calendarScrollView: {
+      flex: 1,
+    },
+    calendarContainer: {
+      padding: Spacing.lg,
+    },
+    monthHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: Spacing.md,
+    },
+    weekHeader: {
+      flexDirection: 'row',
+      paddingBottom: Spacing.sm,
+    },
+    weekDayCell: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: Spacing.xs,
+    },
+    calendarGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    calendarCell: {
+      width: `${100 / 7}%`,
+      aspectRatio: 1,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.backgroundDefault,
+      padding: Spacing.xs,
+      justifyContent: 'flex-start',
+      minHeight: 60,
+    },
+    todayCell: {
+      borderWidth: 2,
+      borderColor: theme.primary,
+    },
+    dayNumber: {
+      fontWeight: '600',
+      marginBottom: Spacing.xs,
+    },
+    dayTodos: {
+      flex: 1,
+      flexWrap: 'wrap',
+      flexDirection: 'row',
+      gap: 2,
+      alignItems: 'center',
+    },
+    todoDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+    },
+    todoDotCompleted: {
+      opacity: 0.4,
+    },
+    todoDotHigh: {
+      backgroundColor: '#F97316',
+    },
+    todoDotMedium: {
+      backgroundColor: '#3B82F6',
+    },
+    todoDotLow: {
+      backgroundColor: '#9CA3AF',
+    },
+    moreTodosText: {
+      fontSize: 10,
+    },
   });
 };

@@ -22,6 +22,7 @@ export default function TodosScreen() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
   // 获取待办列表（使用本地 API）
@@ -241,6 +242,160 @@ export default function TodosScreen() {
     </Swipeable>
   );
 
+  // 日历相关辅助函数
+  const getDaysInMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const isToday = (day: number, month: Date) => {
+    const today = new Date();
+    return (
+      day === today.getDate() &&
+      month.getMonth() === today.getMonth() &&
+      month.getFullYear() === today.getFullYear()
+    );
+  };
+
+  // 获取某天的待办事项
+  const getTodosForDay = (day: number, month: Date): Todo[] => {
+    return todos.filter(todo => {
+      if (!todo.dueDate) return false;
+      const todoDate = new Date(todo.dueDate);
+      return (
+        todoDate.getDate() === day &&
+        todoDate.getMonth() === month.getMonth() &&
+        todoDate.getFullYear() === month.getFullYear()
+      );
+    });
+  };
+
+  // 月份切换
+  const handlePreviousMonth = () => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() - 1);
+    setCurrentMonth(newMonth);
+  };
+
+  const handleNextMonth = () => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() + 1);
+    setCurrentMonth(newMonth);
+  };
+
+  // 渲染日历头部（星期）
+  const renderWeekHeader = () => {
+    const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+    return (
+      <View style={styles.weekHeader}>
+        {weekDays.map((day, index) => (
+          <View key={index} style={styles.weekDayCell}>
+            <ThemedText variant="caption" color={theme.textSecondary}>
+              {day}
+            </ThemedText>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  // 渲染日历格子
+  const renderCalendarCell = (day: number | null, index: number) => {
+    if (day === null) {
+      return <View key={index} style={styles.calendarCell} />;
+    }
+
+    const dayTodos = getTodosForDay(day, currentMonth);
+    const isDayToday = isToday(day, currentMonth);
+
+    return (
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.calendarCell,
+          isDayToday && styles.todayCell
+        ]}
+        onPress={() => {
+          // 可以在这里添加点击日期查看该日所有待办的功能
+          if (dayTodos.length > 0) {
+            console.log('Todos for day:', day, dayTodos);
+          }
+        }}
+      >
+        <ThemedText
+          variant="caption"
+          color={isDayToday ? theme.primary : theme.textPrimary}
+          style={styles.dayNumber}
+        >
+          {day}
+        </ThemedText>
+        <View style={styles.dayTodos}>
+          {dayTodos.slice(0, 3).map((todo, idx) => (
+            <View
+              key={idx}
+              style={[
+                styles.todoDot,
+                todo.status === 'completed' && styles.todoDotCompleted,
+                todo.priority === 'high' && styles.todoDotHigh,
+                todo.priority === 'medium' && styles.todoDotMedium,
+                todo.priority === 'low' && styles.todoDotLow,
+              ]}
+            />
+          ))}
+          {dayTodos.length > 3 && (
+            <ThemedText variant="caption" color={theme.textMuted} style={styles.moreTodosText}>
+              +{dayTodos.length - 3}
+            </ThemedText>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // 渲染日历
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(currentMonth);
+    const firstDay = getFirstDayOfMonth(currentMonth);
+
+    // 构建日历数组（包含空白格子）
+    const calendarDays: (number | null)[] = [];
+    // 填充前导空白
+    for (let i = 0; i < firstDay; i++) {
+      calendarDays.push(null);
+    }
+    // 填充日期
+    for (let i = 1; i <= daysInMonth; i++) {
+      calendarDays.push(i);
+    }
+
+    return (
+      <View style={styles.calendarContainer}>
+        {/* 月份头部 */}
+        <View style={styles.monthHeader}>
+          <TouchableOpacity onPress={handlePreviousMonth}>
+            <FontAwesome6 name="chevron-left" size={20} color={theme.textPrimary} />
+          </TouchableOpacity>
+          <ThemedText variant="h3" color={theme.textPrimary}>
+            {currentMonth.getFullYear()}年{currentMonth.getMonth() + 1}月
+          </ThemedText>
+          <TouchableOpacity onPress={handleNextMonth}>
+            <FontAwesome6 name="chevron-right" size={20} color={theme.textPrimary} />
+          </TouchableOpacity>
+        </View>
+
+        {renderWeekHeader()}
+
+        {/* 日历网格 */}
+        <View style={styles.calendarGrid}>
+          {calendarDays.map((day, index) => renderCalendarCell(day, index))}
+        </View>
+      </View>
+    );
+  };
+
   // 渲染视图模式切换按钮
   const renderViewModeButtons = () => (
     <View style={styles.viewModeContainer}>
@@ -299,6 +454,11 @@ export default function TodosScreen() {
           <View style={styles.centerContainer}>
             <ThemedText variant="body" color={theme.textMuted}>加载中...</ThemedText>
           </View>
+        ) : viewMode === 'monthly' ? (
+          // 月度日历视图
+          <ScrollView style={styles.calendarScrollView}>
+            {renderCalendar()}
+          </ScrollView>
         ) : todos.length === 0 ? (
           <View style={styles.centerContainer}>
             <FontAwesome6 name="clipboard-list" size={48} color={theme.textMuted} />
