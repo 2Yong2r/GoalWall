@@ -1,6 +1,6 @@
 {
-  "version": "0.4.4",
-  "lastUpdated": "2026-02-11T12:40:00Z",
+  "version": "0.4.5",
+  "lastUpdated": "2026-02-11T12:45:00Z",
   "totalFiles": 61,
   "thresholds": {
     "minorVersionFiles": 5,
@@ -8,10 +8,10 @@
   },
   "history": [
     {
-      "version": "0.4.4",
-      "releaseDate": "2026-02-11T12:40:00Z",
-      "description": "优化创建目标页面：取消滚动条，调整布局使界面更美观",
-      "filesModified": 2,
+      "version": "0.4.5",
+      "releaseDate": "2026-02-11T12:45:00Z",
+      "description": "修改Tab栏页面标题：'目标'改为'目标墙'，'待办'改为'待办事项'",
+      "filesModified": 1,
       "changeType": "patch"
     },
     {
