@@ -76,4 +76,21 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// 批量更新目标顺序
+router.post("/reorder", async (req, res) => {
+  try {
+    const { orders } = req.body;
+
+    if (!Array.isArray(orders)) {
+      return res.status(400).json({ success: false, error: "Invalid orders format" });
+    }
+
+    await goalManager.updateGoalOrders(orders);
+    res.json({ success: true, message: "Goal orders updated successfully" });
+  } catch (error) {
+    console.error("Error reordering goals:", error);
+    res.status(500).json({ success: false, error: "Failed to reorder goals" });
+  }
+});
+
 export default router;

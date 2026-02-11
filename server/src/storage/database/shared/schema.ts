@@ -21,6 +21,7 @@ export const goals = pgTable(
       .default(sql`gen_random_uuid()`),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
+    order: integer("order").default(0).notNull(), // 排序顺序
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull(),
@@ -28,6 +29,7 @@ export const goals = pgTable(
   },
   (table) => ({
     nameIdx: index("goals_name_idx").on(table.name),
+    orderIdx: index("goals_order_idx").on(table.order),
   })
 );
 
@@ -84,12 +86,14 @@ const { createInsertSchema: createCoercedInsertSchema } = createSchemaFactory({
 export const insertGoalSchema = createCoercedInsertSchema(goals).pick({
   name: true,
   description: true,
+  order: true,
 });
 
 export const updateGoalSchema = createCoercedInsertSchema(goals)
   .pick({
     name: true,
     description: true,
+    order: true,
   })
   .partial();
 

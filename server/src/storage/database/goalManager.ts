@@ -8,13 +8,21 @@ export class GoalManager {
   async createGoal(data: InsertGoal): Promise<Goal> {
     const db = await getDb(schema);
     const validated = insertGoalSchema.parse(data);
+
+    // 如果没有提供 order 字段，设置为当前最大 order + 1
+    if (validated.order === undefined || validated.order === 0) {
+      const allGoals = await db.select().from(goals).orderBy(sql`${goals.order} DESC`).limit(1);
+      const maxOrder = allGoals.length > 0 ? (allGoals[0].order || 0) : 0;
+      validated.order = maxOrder + 1;
+    }
+
     const [goal] = await db.insert(goals).values(validated).returning();
     return goal;
   }
 
   async getGoals(): Promise<Goal[]> {
     const db = await getDb(schema);
-    return db.select().from(goals).orderBy(sql`${goals.createdAt} DESC`);
+    return db.select().from(goals).orderBy(sql`${goals.order} ASC`);
   }
 
   async getGoalById(id: string): Promise<Goal | null> {
@@ -38,6 +46,18 @@ export class GoalManager {
     const db = await getDb(schema);
     const result = await db.delete(goals).where(eq(goals.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  async updateGoalOrders(orders: { id: string; order: number }[]): Promise<void> {
+    const db = await getDb(schema);
+
+    // 批量更新目标顺序
+    for (const item of orders) {
+      await db
+        .update(goals)
+        .set({ order: item.order, updatedAt: new Date() })
+        .where(eq(goals.id, item.id));
+    }
   }
 }
 

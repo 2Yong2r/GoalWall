@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { View, TouchableOpacity, RefreshControl } from 'react-native';
+import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useFocusEffect } from 'expo-router';
 import { useSafeRouter } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
@@ -23,6 +24,7 @@ export default function HomeScreen() {
   const router = useSafeRouter();
 
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [goalsWithStats, setGoalsWithStats] = useState<GoalWithStats[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -64,8 +66,8 @@ export default function HomeScreen() {
   );
 
   // 计算每个目标的统计数据
-  const goalsWithStats = useMemo(() => {
-    return goals.map(goal => {
+  React.useEffect(() => {
+    const newGoalsWithStats = goals.map(goal => {
       const goalTasks = allTasks.filter(t => t.goalId === goal.id);
 
       if (goalTasks.length === 0) {
@@ -109,6 +111,7 @@ export default function HomeScreen() {
         taskCount: goalTasks.length,
       } as GoalWithStats;
     });
+    setGoalsWithStats(newGoalsWithStats);
   }, [goals, allTasks]);
 
   // 删除目标
@@ -126,60 +129,102 @@ export default function HomeScreen() {
     }
   };
 
-  const renderGoalItem = ({ item }: { item: GoalWithStats }) => (
-    <TouchableOpacity
-      style={styles.goalCard}
-      onPress={() => router.push('/goal-detail', { goalId: item.id })}
-    >
-      <View style={styles.goalHeader}>
-        <ThemedText variant="h4" color={theme.textPrimary}>{item.name}</ThemedText>
-        <TouchableOpacity onPress={() => handleDeleteGoal(item.id)} style={styles.deleteButton}>
-          <FontAwesome6 name="trash" size={16} color={theme.error} />
-        </TouchableOpacity>
-      </View>
-      {item.description && (
-        <ThemedText variant="body" color={theme.textSecondary} style={styles.goalDescription}>
-          {item.description}
-        </ThemedText>
-      )}
+  // 拖拽完成后保存新的顺序
+  const handleDragEnd = async ({ data }: { data: GoalWithStats[] }) => {
+    setGoalsWithStats(data);
 
-      {/* 进度条 */}
-      {item.taskCount > 0 && (
-        <View style={styles.progressSection}>
-          <View style={styles.progressHeader}>
-            <ThemedText variant="caption" color={theme.textMuted}>
-              {item.taskCount} 个任务
-            </ThemedText>
-            <ThemedText variant="caption" color={theme.primary}>
-              {item.progress}%
-            </ThemedText>
-          </View>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
-          </View>
-        </View>
-      )}
+    // 保存新的顺序到后端
+    const orders = data.map((item, index) => ({
+      id: item.id,
+      order: index + 1,
+    }));
 
-      {/* 日期范围 */}
-      {(item.startDate || item.endDate) && (
-        <View style={styles.dateRange}>
-          <FontAwesome6 name="calendar-days" size={14} color={theme.textMuted} />
-          {item.startDate && item.endDate ? (
-            <ThemedText variant="caption" color={theme.textMuted} style={styles.dateRangeText}>
-              {item.startDate.toLocaleDateString()} - {item.endDate.toLocaleDateString()}
-            </ThemedText>
-          ) : item.startDate ? (
-            <ThemedText variant="caption" color={theme.textMuted} style={styles.dateRangeText}>
-              开始: {item.startDate.toLocaleDateString()}
-            </ThemedText>
-          ) : item.endDate ? (
-            <ThemedText variant="caption" color={theme.textMuted} style={styles.dateRangeText}>
-              结束: {item.endDate.toLocaleDateString()}
-            </ThemedText>
-          ) : null}
+    try {
+      /**
+       * 服务端文件：server/src/routes/goals.ts
+       * 接口：POST /api/v1/goals/reorder
+       * Body 参数：orders: { id: string, order: number }[]
+       */
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals/reorder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        // 重新获取目标列表以更新原始 goals 数据
+        fetchGoals();
+      }
+    } catch (error) {
+      console.error('Failed to update goal orders:', error);
+    }
+  };
+
+  const renderGoalItem = ({ item, drag, isActive }: RenderItemParams<GoalWithStats>) => (
+    <ScaleDecorator>
+      <TouchableOpacity
+        style={[
+          styles.goalCard,
+          isActive && styles.goalCardActive,
+        ]}
+        onPress={() => router.push('/goal-detail', { goalId: item.id })}
+        onLongPress={drag}
+      >
+        <View style={styles.goalHeader}>
+          <View style={styles.goalTitleContainer}>
+            <TouchableOpacity onPressIn={drag} style={styles.dragHandle}>
+              <FontAwesome6 name="grip-lines" size={20} color={theme.textMuted} />
+            </TouchableOpacity>
+            <ThemedText variant="h4" color={theme.textPrimary}>{item.name}</ThemedText>
+          </View>
+          <TouchableOpacity onPress={() => handleDeleteGoal(item.id)} style={styles.deleteButton}>
+            <FontAwesome6 name="trash" size={16} color={theme.error} />
+          </TouchableOpacity>
         </View>
-      )}
-    </TouchableOpacity>
+        {item.description && (
+          <ThemedText variant="body" color={theme.textSecondary} style={styles.goalDescription}>
+            {item.description}
+          </ThemedText>
+        )}
+
+        {/* 进度条 */}
+        {item.taskCount > 0 && (
+          <View style={styles.progressSection}>
+            <View style={styles.progressHeader}>
+              <ThemedText variant="caption" color={theme.textMuted}>
+                {item.taskCount} 个任务
+              </ThemedText>
+              <ThemedText variant="caption" color={theme.primary}>
+                {item.progress}%
+              </ThemedText>
+            </View>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
+            </View>
+          </View>
+        )}
+
+        {/* 日期范围 */}
+        {(item.startDate || item.endDate) && (
+          <View style={styles.dateRange}>
+            <FontAwesome6 name="calendar-days" size={14} color={theme.textMuted} />
+            {item.startDate && item.endDate ? (
+              <ThemedText variant="caption" color={theme.textMuted} style={styles.dateRangeText}>
+                {item.startDate.toLocaleDateString()} - {item.endDate.toLocaleDateString()}
+              </ThemedText>
+            ) : item.startDate ? (
+              <ThemedText variant="caption" color={theme.textMuted} style={styles.dateRangeText}>
+                开始: {item.startDate.toLocaleDateString()}
+              </ThemedText>
+            ) : item.endDate ? (
+              <ThemedText variant="caption" color={theme.textMuted} style={styles.dateRangeText}>
+                结束: {item.endDate.toLocaleDateString()}
+              </ThemedText>
+            ) : null}
+          </View>
+        )}
+      </TouchableOpacity>
+    </ScaleDecorator>
   );
 
   return (
@@ -195,10 +240,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <FlatList
+        <DraggableFlatList
           data={goalsWithStats}
           renderItem={renderGoalItem}
           keyExtractor={(item) => item.id}
+          onDragEnd={handleDragEnd}
+          activationDistance={10}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={fetchGoals} />

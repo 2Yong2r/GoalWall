@@ -43,11 +43,28 @@ export const createStyles = (theme: Theme) => {
       shadowRadius: 4,
       elevation: 2,
     },
+    goalCardActive: {
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 5,
+    },
     goalHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: Spacing.sm,
+    },
+    goalTitleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      marginRight: Spacing.sm,
+    },
+    dragHandle: {
+      padding: Spacing.xs,
+      marginRight: Spacing.sm,
     },
     goalDescription: {
       fontSize: 14,
