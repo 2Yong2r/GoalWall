@@ -107,10 +107,16 @@ class SyncManager {
     console.log('[Sync] Checking backend health at:', healthUrl);
 
     try {
-      const response = await fetch(healthUrl, {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000),
+      // 使用 Promise.race 实现超时（兼容性更好）
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 5000);
       });
+
+      const response = await Promise.race([
+        fetch(healthUrl, { method: 'GET' }),
+        timeoutPromise,
+      ]);
+
       const result = await response.json();
       console.log('[Sync] Backend health check result:', result);
       return response.ok;
