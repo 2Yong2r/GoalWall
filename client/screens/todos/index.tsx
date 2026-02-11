@@ -10,6 +10,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import { createStyles } from './styles';
 import type { Todo } from '@/types';
+import { localApiService } from '@/services/api';
 
 type ViewMode = 'timeline' | 'upcoming' | 'monthly';
 
@@ -23,28 +24,18 @@ export default function TodosScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
-  // 获取待办列表
+  // 获取待办列表（使用本地 API）
   const fetchTodos = useCallback(async () => {
     setLoading(true);
     try {
-      let url = `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos`;
-      if (viewMode === 'upcoming') {
-        url += '/upcoming?days=7';
-      } else if (viewMode === 'monthly') {
-        const now = new Date();
-        url += `/monthly?year=${now.getFullYear()}&month=${now.getMonth() + 1}`;
-      }
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.success) {
-        setTodos(result.data);
-      }
+      const data = await localApiService.getTodos();
+      setTodos(data);
     } catch (error) {
       console.error('Failed to fetch todos:', error);
     } finally {
       setLoading(false);
     }
-  }, [viewMode]);
+  }, []);
 
   // 页面聚焦或视图模式切换时刷新数据
   useFocusEffect(
@@ -53,28 +44,21 @@ export default function TodosScreen() {
     }, [fetchTodos])
   );
 
-  // 切换待办状态
+  // 切换待办状态（使用本地 API）
   const handleToggleTodo = async (todoId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
     const completedAt = newStatus === 'completed' ? new Date().toISOString() : null;
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos/${todoId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, completedAt }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        setTodos(prev => prev.map(t =>
-          t.id === todoId ? { ...t, status: newStatus, completedAt } : t
-        ));
-      }
+      await localApiService.updateTodo(todoId, { status: newStatus, completedAt });
+      setTodos(prev => prev.map(t =>
+        t.id === todoId ? { ...t, status: newStatus, completedAt } : t
+      ));
     } catch (error) {
       console.error('Failed to toggle todo:', error);
     }
   };
 
-  // 删除待办
+  // 删除待办（使用本地 API）
   const handleDeleteTodo = async (todoId: string) => {
     Alert.alert(
       '确认删除',
@@ -86,13 +70,8 @@ export default function TodosScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos/${todoId}`, {
-                method: 'DELETE',
-              });
-              const result = await response.json();
-              if (result.success) {
-                setTodos(prev => prev.filter(t => t.id !== todoId));
-              }
+              await localApiService.deleteTodo(todoId);
+              setTodos(prev => prev.filter(t => t.id !== todoId));
             } catch (error) {
               console.error('Failed to delete todo:', error);
             }
