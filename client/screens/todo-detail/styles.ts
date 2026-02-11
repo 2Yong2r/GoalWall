@@ -115,10 +115,17 @@ export const createStyles = (theme: Theme) => {
     compactButtonWithRepeat: {
       flex: 1,
     },
-    repeatIconButton: {
-      padding: Spacing.sm,
-      width: 40,
-      justifyContent: 'center',
+    timeRow: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+    },
+    timeButton: {
+      flex: 1,
+    },
+    repeatIconButtonFull: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
     },
     compactButtonText: {
       fontSize: 14,

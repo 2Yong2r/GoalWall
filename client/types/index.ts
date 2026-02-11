@@ -37,7 +37,8 @@ export interface Todo {
   id: string;
   title: string;
   description: string | null;
-  dueDate: string | null;
+  startTime: string | null;
+  endTime: string | null;
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'completed';
   completedAt: string | null;

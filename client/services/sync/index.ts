@@ -243,8 +243,11 @@ class SyncManager {
         if (todo.description) {
           body.description = todo.description;
         }
-        if (todo.due_date) {
-          body.dueDate = todo.due_date;
+        if (todo.start_time) {
+          body.startTime = todo.start_time;
+        }
+        if (todo.end_time) {
+          body.endTime = todo.end_time;
         }
         if (todo.completed_at) {
           body.completedAt = todo.completed_at;

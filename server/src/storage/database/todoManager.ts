@@ -14,7 +14,7 @@ export class TodoManager {
 
   async getAllTodos(): Promise<Todo[]> {
     const db = await getDb(schema);
-    return db.select().from(todos).where(isNull(todos.deletedAt)).orderBy(sql`${todos.dueDate} ASC NULLS LAST, ${todos.createdAt} DESC`);
+    return db.select().from(todos).where(isNull(todos.deletedAt)).orderBy(sql`${todos.endTime} ASC NULLS LAST, ${todos.createdAt} DESC`);
   }
 
   async getTodoById(id: string): Promise<Todo | null> {
@@ -57,7 +57,7 @@ export class TodoManager {
     const db = await getDb(schema);
     return db.select().from(todos)
       .where(and(isNull(todos.deletedAt), eq(todos.status, 'pending')))
-      .orderBy(sql`${todos.dueDate} ASC NULLS LAST, ${todos.createdAt} DESC`);
+      .orderBy(sql`${todos.endTime} ASC NULLS LAST, ${todos.createdAt} DESC`);
   }
 
   // 获取已完成
@@ -81,15 +81,15 @@ export class TodoManager {
           isNull(todos.deletedAt),
           eq(todos.status, 'pending'),
           or(
-            isNull(todos.dueDate),
+            isNull(todos.endTime),
             and(
-              gte(todos.dueDate, now),
-              lte(todos.dueDate, futureDate)
+              gte(todos.endTime, now),
+              lte(todos.endTime, futureDate)
             )
           )
         )
       )
-      .orderBy(sql`${todos.dueDate} ASC NULLS LAST, ${todos.createdAt} DESC`);
+      .orderBy(sql`${todos.endTime} ASC NULLS LAST, ${todos.createdAt} DESC`);
   }
 
   // 获取月度待办
@@ -103,12 +103,12 @@ export class TodoManager {
         and(
           isNull(todos.deletedAt),
           or(
-            isNull(todos.dueDate),
-            between(todos.dueDate, startDate, endDate)
+            isNull(todos.endTime),
+            between(todos.endTime, startDate, endDate)
           )
         )
       )
-      .orderBy(sql`${todos.dueDate} ASC NULLS LAST, ${todos.createdAt} DESC`);
+      .orderBy(sql`${todos.endTime} ASC NULLS LAST, ${todos.createdAt} DESC`);
   }
 
   // 按优先级获取待办
@@ -122,7 +122,7 @@ export class TodoManager {
           eq(todos.priority, priority)
         )
       )
-      .orderBy(sql`${todos.dueDate} ASC NULLS LAST, ${todos.createdAt} DESC`);
+      .orderBy(sql`${todos.endTime} ASC NULLS LAST, ${todos.createdAt} DESC`);
   }
 }
 

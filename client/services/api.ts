@@ -246,7 +246,8 @@ export class LocalApiService {
   static async createTodo(data: {
     title: string;
     description?: string | null;
-    dueDate?: string | null;
+    startTime?: string | null;
+    endTime?: string | null;
     priority?: 'high' | 'medium' | 'low';
     status?: 'pending' | 'completed';
     isRepeat?: boolean;
@@ -259,7 +260,8 @@ export class LocalApiService {
       id,
       title: data.title,
       description: data.description,
-      due_date: data.dueDate,
+      start_time: data.startTime,
+      end_time: data.endTime,
       priority: data.priority,
       status: data.status,
       is_repeat: data.isRepeat,
@@ -285,7 +287,8 @@ export class LocalApiService {
     data: {
       title?: string;
       description?: string | null;
-      dueDate?: string | null;
+      startTime?: string | null;
+      endTime?: string | null;
       priority?: 'high' | 'medium' | 'low';
       status?: 'pending' | 'completed';
       completedAt?: string | null;
@@ -303,7 +306,8 @@ export class LocalApiService {
     await TodoDAL.updateTodo(id, {
       title: data.title,
       description: data.description,
-      due_date: data.dueDate,
+      start_time: data.startTime,
+      end_time: data.endTime,
       priority: data.priority,
       status: data.status,
       completed_at: completedAt,
@@ -361,7 +365,8 @@ export class LocalApiService {
       id: row.id,
       title: row.title,
       description: row.description,
-      dueDate: row.due_date,
+      startTime: row.start_time,
+      endTime: row.end_time,
       priority: row.priority,
       status: row.status,
       completedAt: row.completed_at,

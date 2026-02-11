@@ -30,8 +30,10 @@ export default function TodoDetailScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
-  const [dueDate, setDueDate] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [endTime, setEndTime] = useState<Date | null>(null);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [repeatConfig, setRepeatConfig] = useState<RepeatConfig>({
     isRepeat: false,
@@ -52,7 +54,8 @@ export default function TodoDetailScreen() {
       setTitle(todoData.title);
       setDescription(todoData.description || '');
       setPriority((todoData.priority as 'high' | 'medium' | 'low') || 'medium');
-      setDueDate(todoData.dueDate ? new Date(todoData.dueDate) : null);
+      setStartTime(todoData.startTime ? new Date(todoData.startTime) : null);
+      setEndTime(todoData.endTime ? new Date(todoData.endTime) : null);
       // 加载重复配置
       setRepeatConfig({
         isRepeat: todoData.isRepeat || false,
@@ -93,8 +96,11 @@ export default function TodoDetailScreen() {
         repeatEndDate: repeatConfig.repeatEndDate ? repeatConfig.repeatEndDate.toISOString() : null,
       };
 
-      if (dueDate) {
-        todoData.dueDate = dueDate.toISOString();
+      if (startTime) {
+        todoData.startTime = startTime.toISOString();
+      }
+      if (endTime) {
+        todoData.endTime = endTime.toISOString();
       }
 
       if (isCreateMode) {
@@ -143,13 +149,23 @@ export default function TodoDetailScreen() {
     );
   };
 
-  // 日期选择器处理
-  const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
+  // 开始时间选择器处理
+  const handleStartTimeChange = (event: DateTimePickerEvent, date?: Date) => {
     if (Platform.OS === 'android') {
-      setShowDatePicker(false);
+      setShowStartTimePicker(false);
     }
     if (event.type === 'set' && date) {
-      setDueDate(date);
+      setStartTime(date);
+    }
+  };
+
+  // 结束时间选择器处理
+  const handleEndTimeChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowEndTimePicker(false);
+    }
+    if (event.type === 'set' && date) {
+      setEndTime(date);
     }
   };
 
@@ -161,6 +177,13 @@ export default function TodoDetailScreen() {
       case 'low': return '#9CA3AF';
       default: return '#9CA3AF';
     }
+  };
+
+  // 格式化时间
+  const formatTime = (date: Date) => {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
   return (
@@ -256,48 +279,81 @@ export default function TodoDetailScreen() {
             />
           </View>
 
-          {/* 截止日期 + 重复设置 */}
+          {/* 开始时间 + 结束时间 */}
           <View style={styles.inputGroup}>
-            <View style={styles.compactRow}>
+            <View style={styles.timeRow}>
               <TouchableOpacity
-                style={[styles.compactButton, styles.compactButtonWithRepeat, { borderColor: theme.border }]}
-                onPress={() => setShowDatePicker(true)}
+                style={[styles.compactButton, styles.timeButton, { borderColor: theme.border }]}
+                onPress={() => setShowStartTimePicker(true)}
               >
-                <FontAwesome6 name="calendar" size={14} color={theme.textMuted} />
+                <FontAwesome6 name="clock" size={14} color={theme.textMuted} />
                 <ThemedText
                   variant="body"
-                  color={dueDate ? theme.textPrimary : theme.textMuted}
+                  color={startTime ? theme.textPrimary : theme.textMuted}
                   style={styles.compactButtonText}
                 >
-                  {dueDate ? dueDate.toLocaleDateString() : '截止日期'}
+                  {startTime ? formatTime(startTime) : '开始时间'}
                 </ThemedText>
               </TouchableOpacity>
-              {/* 重复设置图标 */}
+
               <TouchableOpacity
-                style={[
-                  styles.compactButton,
-                  styles.repeatIconButton,
-                  { borderColor: repeatConfig.isRepeat ? theme.primary : theme.border }
-                ]}
-                onPress={() => setRepeatConfig({ ...repeatConfig, isRepeat: !repeatConfig.isRepeat })}
+                style={[styles.compactButton, styles.timeButton, { borderColor: theme.border }]}
+                onPress={() => setShowEndTimePicker(true)}
               >
-                <FontAwesome6
-                  name="rotate-right"
-                  size={14}
-                  color={repeatConfig.isRepeat ? theme.primary : theme.textMuted}
-                />
+                <FontAwesome6 name="clock" size={14} color={theme.textMuted} />
+                <ThemedText
+                  variant="body"
+                  color={endTime ? theme.textPrimary : theme.textMuted}
+                  style={styles.compactButtonText}
+                >
+                  {endTime ? formatTime(endTime) : '结束时间'}
+                </ThemedText>
               </TouchableOpacity>
             </View>
           </View>
 
-          {showDatePicker && (
+          {showStartTimePicker && (
             <DateTimePicker
-              value={dueDate || new Date()}
-              mode="date"
+              value={startTime || new Date()}
+              mode="time"
               display="default"
-              onChange={handleDateChange}
+              onChange={handleStartTimeChange}
             />
           )}
+
+          {showEndTimePicker && (
+            <DateTimePicker
+              value={endTime || new Date()}
+              mode="time"
+              display="default"
+              onChange={handleEndTimeChange}
+            />
+          )}
+
+          {/* 重复设置图标 */}
+          <View style={styles.inputGroup}>
+            <TouchableOpacity
+              style={[
+                styles.compactButton,
+                styles.repeatIconButtonFull,
+                { borderColor: repeatConfig.isRepeat ? theme.primary : theme.border }
+              ]}
+              onPress={() => setRepeatConfig({ ...repeatConfig, isRepeat: !repeatConfig.isRepeat })}
+            >
+              <FontAwesome6
+                name="rotate-right"
+                size={14}
+                color={repeatConfig.isRepeat ? theme.primary : theme.textMuted}
+              />
+              <ThemedText
+                variant="body"
+                color={repeatConfig.isRepeat ? theme.primary : theme.textMuted}
+                style={styles.compactButtonText}
+              >
+                重复
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
 
           {/* 按钮组 */}
           <View style={styles.buttonGroup}>

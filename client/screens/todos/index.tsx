@@ -54,13 +54,13 @@ export default function TodosScreen() {
 
       if (mode === 'timeline') {
         // 时间轴模式：有截止日期的按日期升序，无截止日期的排最后按标题排序
-        const withDueDate = filteredData.filter(t => t.dueDate);
-        const withoutDueDate = filteredData.filter(t => !t.dueDate);
+        const withDueDate = filteredData.filter(t => t.endTime);
+        const withoutDueDate = filteredData.filter(t => !t.endTime);
 
         // 有截止日期的按日期升序排列（由近到远）
         withDueDate.sort((a, b) => {
-          if (!a.dueDate || !b.dueDate) return 0;
-          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+          if (!a.endTime || !b.endTime) return 0;
+          return new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
         });
 
         // 无截止日期的按标题拼音排序
@@ -75,16 +75,16 @@ export default function TodosScreen() {
 
         // 过滤出有截止日期且在7天内的待办
         const upcomingTodos = filteredData.filter(t => {
-          if (!t.dueDate) return false;
-          const dueDate = new Date(t.dueDate);
+          if (!t.endTime) return false;
+          const endTime = new Date(t.endTime);
           // 范围：今天到7天后（包含今天和第7天）
-          return dueDate >= now && dueDate <= sevenDaysLater;
+          return endTime >= now && endTime <= sevenDaysLater;
         });
 
         // 按截止日期升序排列
         upcomingTodos.sort((a, b) => {
-          if (!a.dueDate || !b.dueDate) return 0;
-          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+          if (!a.endTime || !b.endTime) return 0;
+          return new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
         });
 
         sortedData = upcomingTodos;
@@ -104,6 +104,17 @@ export default function TodosScreen() {
       setLoading(false);
     }
   }, []);
+
+  // 格式化时间显示
+  const formatTime = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  };
 
   // 页面聚焦或视图模式切换时刷新数据
   useFocusEffect(
@@ -257,9 +268,11 @@ export default function TodosScreen() {
               >
                 {item.title}
               </ThemedText>
-              {item.dueDate && (
+              {(item.startTime || item.endTime) && (
                 <ThemedText variant="caption" color={theme.textMuted} style={styles.todoDateInline}>
-                  {new Date(item.dueDate).toLocaleDateString()}
+                  {item.startTime && formatTime(item.startTime)}
+                  {item.startTime && item.endTime && ' - '}
+                  {item.endTime && formatTime(item.endTime)}
                 </ThemedText>
               )}
             </View>
@@ -291,8 +304,8 @@ export default function TodosScreen() {
   // 获取某天的待办事项
   const getTodosForDay = (day: number, month: Date): Todo[] => {
     return todos.filter(todo => {
-      if (!todo.dueDate) return false;
-      const todoDate = new Date(todo.dueDate);
+      if (!todo.endTime) return false;
+      const todoDate = new Date(todo.endTime);
       return (
         todoDate.getDate() === day &&
         todoDate.getMonth() === month.getMonth() &&

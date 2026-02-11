@@ -4,7 +4,8 @@ export interface TodoRow {
   id: string;
   title: string;
   description: string | null;
-  due_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'completed';
   completed_at: string | null;
@@ -27,7 +28,8 @@ export async function createTodo(todo: {
   id: string;
   title: string;
   description?: string | null;
-  due_date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   priority?: 'high' | 'medium' | 'low';
   status?: 'pending' | 'completed';
   completed_at?: string | null;
@@ -43,7 +45,7 @@ export async function createTodo(todo: {
 
     await db.runAsync(
       `INSERT INTO todos (
-        id, title, description, due_date, priority, status, completed_at,
+        id, title, description, start_time, end_time, priority, status, completed_at,
         is_repeat, repeat_interval, repeat_unit, repeat_end_date,
         created_at, updated_at, synced_at, sync_status, remote_deleted
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -51,7 +53,8 @@ export async function createTodo(todo: {
         todo.id,
         todo.title,
         todo.description || null,
-        todo.due_date || null,
+        todo.start_time || null,
+        todo.end_time || null,
         todo.priority || 'medium',
         todo.status || 'pending',
         todo.completed_at || null,
@@ -81,7 +84,8 @@ export async function updateTodo(
   updates: Partial<{
     title: string;
     description: string | null;
-    due_date: string | null;
+    start_time: string | null;
+    end_time: string | null;
     priority: 'high' | 'medium' | 'low';
     status: 'pending' | 'completed';
     completed_at: string | null;
@@ -106,9 +110,13 @@ export async function updateTodo(
     fields.push('description = ?');
     values.push(updates.description);
   }
-  if (updates.due_date !== undefined) {
-    fields.push('due_date = ?');
-    values.push(updates.due_date);
+  if (updates.start_time !== undefined) {
+    fields.push('start_time = ?');
+    values.push(updates.start_time);
+  }
+  if (updates.end_time !== undefined) {
+    fields.push('end_time = ?');
+    values.push(updates.end_time);
   }
   if (updates.priority !== undefined) {
     fields.push('priority = ?');
@@ -203,9 +211,9 @@ export async function getUpcomingTodos(days: number = 7): Promise<TodoRow[]> {
     `SELECT * FROM todos
      WHERE deleted_at IS NULL
        AND remote_deleted = 0
-       AND due_date IS NOT NULL
-       AND due_date <= ?
-     ORDER BY due_date ASC`,
+       AND end_time IS NOT NULL
+       AND end_time <= ?
+     ORDER BY end_time ASC`,
     [futureDate.toISOString()]
   );
   return result;
@@ -262,7 +270,8 @@ export async function upsertTodosFromCloud(todos: any[]): Promise<void> {
         `UPDATE todos SET
           title = ?,
           description = ?,
-          due_date = ?,
+          start_time = ?,
+          end_time = ?,
           priority = ?,
           status = ?,
           completed_at = ?,
@@ -278,7 +287,8 @@ export async function upsertTodosFromCloud(todos: any[]): Promise<void> {
         [
           todo.title,
           todo.description || null,
-          todo.dueDate || null,
+          todo.startTime || null,
+          todo.endTime || null,
           todo.priority || 'medium',
           todo.status || 'pending',
           todo.completedAt || null,
@@ -296,7 +306,7 @@ export async function upsertTodosFromCloud(todos: any[]): Promise<void> {
     } else {
       await db.runAsync(
         `INSERT INTO todos (
-          id, title, description, due_date, priority, status, completed_at,
+          id, title, description, start_time, end_time, priority, status, completed_at,
           is_repeat, repeat_interval, repeat_unit, repeat_end_date,
           deleted_at, created_at, updated_at, synced_at, sync_status
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -304,7 +314,8 @@ export async function upsertTodosFromCloud(todos: any[]): Promise<void> {
           todo.id,
           todo.title,
           todo.description || null,
-          todo.dueDate || null,
+          todo.startTime || null,
+          todo.endTime || null,
           todo.priority || 'medium',
           todo.status || 'pending',
           todo.completedAt || null,

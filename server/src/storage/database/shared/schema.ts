@@ -104,7 +104,8 @@ export const todos = pgTable(
       .default(sql`gen_random_uuid()`),
     title: varchar("title", { length: 255 }).notNull(),
     description: text("description"),
-    dueDate: timestamp("due_date", { withTimezone: true, mode: 'date' }), // 到期日期
+    startTime: timestamp("start_time", { withTimezone: true, mode: 'date' }), // 开始时间
+    endTime: timestamp("end_time", { withTimezone: true, mode: 'date' }), // 结束时间
     priority: priorityEnum("priority").notNull().default("medium"), // 优先级：high(高)、medium(中)、low(低)
     status: todoStatusEnum("status").notNull().default("pending"), // 状态：pending(待办)、completed(已完成)
     completedAt: timestamp("completed_at", { withTimezone: true, mode: 'date' }), // 完成时间
@@ -119,7 +120,8 @@ export const todos = pgTable(
     deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'date' }), // 软删除时间
   },
   (table) => ({
-    dueDateIdx: index("todos_due_date_idx").on(table.dueDate),
+    startTimeIdx: index("todos_start_time_idx").on(table.startTime),
+    endTimeIdx: index("todos_end_time_idx").on(table.endTime),
     statusIdx: index("todos_status_idx").on(table.status),
     deletedAtIdx: index("todos_deleted_at_idx").on(table.deletedAt),
   })
@@ -187,7 +189,8 @@ export const insertTaskUpdateSchema = createCoercedInsertSchema(taskUpdates).pic
 export const insertTodoSchema = createCoercedInsertSchema(todos).pick({
   title: true,
   description: true,
-  dueDate: true,
+  startTime: true,
+  endTime: true,
   priority: true,
   status: true,
   completedAt: true,
@@ -201,7 +204,8 @@ export const updateTodoSchema = createCoercedInsertSchema(todos)
   .pick({
     title: true,
     description: true,
-    dueDate: true,
+    startTime: true,
+    endTime: true,
     priority: true,
     status: true,
     completedAt: true,
