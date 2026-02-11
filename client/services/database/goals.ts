@@ -22,23 +22,30 @@ export async function createGoal(goal: {
   description?: string | null;
   order?: number;
 }): Promise<void> {
-  const db = await getDatabase();
-  const now = new Date().toISOString();
+  try {
+    console.log('[Goals] Creating goal:', goal.id, goal.name);
+    const db = await getDatabase();
+    const now = new Date().toISOString();
 
-  await db.run(
-    `INSERT INTO goals (id, name, description, order_num, created_at, updated_at, synced_at, sync_status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      goal.id,
-      goal.name,
-      goal.description || null,
-      goal.order || 0,
-      now,
-      now,
-      null,
-      'pending'
-    ]
-  );
+    await db.runAsync(
+      `INSERT INTO goals (id, name, description, order_num, created_at, updated_at, synced_at, sync_status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        goal.id,
+        goal.name,
+        goal.description || null,
+        goal.order || 0,
+        now,
+        now,
+        null,
+        'pending'
+      ]
+    );
+    console.log('[Goals] Goal created successfully:', goal.id);
+  } catch (error) {
+    console.error('[Goals] Failed to create goal:', error);
+    throw error;
+  }
 }
 
 /**
@@ -82,7 +89,7 @@ export async function updateGoal(
   values.push('pending');
   values.push(id);
 
-  await db.run(
+  await db.runAsync(
     `UPDATE goals SET ${fields.join(', ')} WHERE id = ?`,
     values
   );
@@ -95,7 +102,7 @@ export async function deleteGoal(id: string): Promise<void> {
   const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE goals SET deleted_at = ?, updated_at = ?, sync_status = ? WHERE id = ?`,
     [now, now, 'pending', id]
   );
@@ -142,7 +149,7 @@ export async function markGoalSynced(id: string, syncedAt?: string): Promise<voi
   const db = await getDatabase();
   const now = syncedAt || new Date().toISOString();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE goals SET synced_at = ?, sync_status = ? WHERE id = ?`,
     [now, 'synced', id]
   );
@@ -154,7 +161,7 @@ export async function markGoalSynced(id: string, syncedAt?: string): Promise<voi
 export async function markGoalRemoteDeleted(id: string): Promise<void> {
   const db = await getDatabase();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE goals SET remote_deleted = 1, sync_status = ? WHERE id = ?`,
     ['synced', id]
   );
@@ -173,7 +180,7 @@ export async function upsertGoalsFromCloud(goals: any[]): Promise<void> {
 
     if (existing) {
       // 更新
-      await db.run(
+      await db.runAsync(
         `UPDATE goals SET
           name = ?,
           description = ?,
@@ -196,7 +203,7 @@ export async function upsertGoalsFromCloud(goals: any[]): Promise<void> {
       );
     } else {
       // 插入
-      await db.run(
+      await db.runAsync(
         `INSERT INTO goals (id, name, description, order_num, deleted_at, created_at, updated_at, synced_at, sync_status)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [

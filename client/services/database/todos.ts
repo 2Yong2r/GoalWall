@@ -36,33 +36,40 @@ export async function createTodo(todo: {
   repeat_unit?: string | null;
   repeat_end_date?: string | null;
 }): Promise<void> {
-  const db = await getDatabase();
-  const now = new Date().toISOString();
+  try {
+    console.log('[Todos] Creating todo:', todo.id, todo.title);
+    const db = await getDatabase();
+    const now = new Date().toISOString();
 
-  await db.run(
-    `INSERT INTO todos (
-      id, title, description, due_date, priority, status, completed_at,
-      is_repeat, repeat_interval, repeat_unit, repeat_end_date,
-      created_at, updated_at, synced_at, sync_status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      todo.id,
-      todo.title,
-      todo.description || null,
-      todo.due_date || null,
-      todo.priority || 'medium',
-      todo.status || 'pending',
-      todo.completed_at || null,
-      todo.is_repeat ? 1 : 0,
-      todo.repeat_interval || 1,
-      todo.repeat_unit || null,
-      todo.repeat_end_date || null,
-      now,
-      now,
-      null,
-      'pending'
-    ]
-  );
+    await db.runAsync(
+      `INSERT INTO todos (
+        id, title, description, due_date, priority, status, completed_at,
+        is_repeat, repeat_interval, repeat_unit, repeat_end_date,
+        created_at, updated_at, synced_at, sync_status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        todo.id,
+        todo.title,
+        todo.description || null,
+        todo.due_date || null,
+        todo.priority || 'medium',
+        todo.status || 'pending',
+        todo.completed_at || null,
+        todo.is_repeat ? 1 : 0,
+        todo.repeat_interval || 1,
+        todo.repeat_unit || null,
+        todo.repeat_end_date || null,
+        now,
+        now,
+        null,
+        'pending'
+      ]
+    );
+    console.log('[Todos] Todo created successfully:', todo.id);
+  } catch (error) {
+    console.error('[Todos] Failed to create todo:', error);
+    throw error;
+  }
 }
 
 /**
@@ -141,7 +148,7 @@ export async function updateTodo(
   values.push('pending');
   values.push(id);
 
-  await db.run(
+  await db.runAsync(
     `UPDATE todos SET ${fields.join(', ')} WHERE id = ?`,
     values
   );
@@ -154,7 +161,7 @@ export async function deleteTodo(id: string): Promise<void> {
   const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE todos SET deleted_at = ?, updated_at = ?, sync_status = ? WHERE id = ?`,
     [now, now, 'pending', id]
   );
@@ -221,7 +228,7 @@ export async function markTodoSynced(id: string, syncedAt?: string): Promise<voi
   const db = await getDatabase();
   const now = syncedAt || new Date().toISOString();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE todos SET synced_at = ?, sync_status = ? WHERE id = ?`,
     [now, 'synced', id]
   );
@@ -233,7 +240,7 @@ export async function markTodoSynced(id: string, syncedAt?: string): Promise<voi
 export async function markTodoRemoteDeleted(id: string): Promise<void> {
   const db = await getDatabase();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE todos SET remote_deleted = 1, sync_status = ? WHERE id = ?`,
     ['synced', id]
   );
@@ -250,7 +257,7 @@ export async function upsertTodosFromCloud(todos: any[]): Promise<void> {
     const existing = await getTodo(todo.id);
 
     if (existing) {
-      await db.run(
+      await db.runAsync(
         `UPDATE todos SET
           title = ?,
           description = ?,
@@ -286,7 +293,7 @@ export async function upsertTodosFromCloud(todos: any[]): Promise<void> {
         ]
       );
     } else {
-      await db.run(
+      await db.runAsync(
         `INSERT INTO todos (
           id, title, description, due_date, priority, status, completed_at,
           is_repeat, repeat_interval, repeat_unit, repeat_end_date,

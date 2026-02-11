@@ -38,35 +38,42 @@ export async function createTask(task: {
   repeat_unit?: string | null;
   repeat_end_date?: string | null;
 }): Promise<void> {
-  const db = await getDatabase();
-  const now = new Date().toISOString();
+  try {
+    console.log('[Tasks] Creating task:', task.id, task.description);
+    const db = await getDatabase();
+    const now = new Date().toISOString();
 
-  await db.run(
-    `INSERT INTO tasks (
-      id, goal_id, description, priority, start_date, end_date,
-      completion_percentage, actual_completion_date, is_repeat,
-      repeat_interval, repeat_unit, repeat_end_date,
-      created_at, updated_at, synced_at, sync_status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      task.id,
-      task.goal_id || null,
-      task.description,
-      task.priority || 'medium',
-      task.start_date || null,
-      task.end_date || null,
-      task.completion_percentage || 0,
-      task.actual_completion_date || null,
-      task.is_repeat ? 1 : 0,
-      task.repeat_interval || 1,
-      task.repeat_unit || null,
-      task.repeat_end_date || null,
-      now,
-      now,
-      null,
-      'pending'
-    ]
-  );
+    await db.runAsync(
+      `INSERT INTO tasks (
+        id, goal_id, description, priority, start_date, end_date,
+        completion_percentage, actual_completion_date, is_repeat,
+        repeat_interval, repeat_unit, repeat_end_date,
+        created_at, updated_at, synced_at, sync_status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        task.id,
+        task.goal_id || null,
+        task.description,
+        task.priority || 'medium',
+        task.start_date || null,
+        task.end_date || null,
+        task.completion_percentage || 0,
+        task.actual_completion_date || null,
+        task.is_repeat ? 1 : 0,
+        task.repeat_interval || 1,
+        task.repeat_unit || null,
+        task.repeat_end_date || null,
+        now,
+        now,
+        null,
+        'pending'
+      ]
+    );
+    console.log('[Tasks] Task created successfully:', task.id);
+  } catch (error) {
+    console.error('[Tasks] Failed to create task:', error);
+    throw error;
+  }
 }
 
 /**
@@ -150,7 +157,7 @@ export async function updateTask(
   values.push('pending');
   values.push(id);
 
-  await db.run(
+  await db.runAsync(
     `UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`,
     values
   );
@@ -163,7 +170,7 @@ export async function deleteTask(id: string): Promise<void> {
   const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE tasks SET deleted_at = ?, updated_at = ?, sync_status = ? WHERE id = ?`,
     [now, now, 'pending', id]
   );
@@ -234,7 +241,7 @@ export async function markTaskSynced(id: string, syncedAt?: string): Promise<voi
   const db = await getDatabase();
   const now = syncedAt || new Date().toISOString();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE tasks SET synced_at = ?, sync_status = ? WHERE id = ?`,
     [now, 'synced', id]
   );
@@ -246,7 +253,7 @@ export async function markTaskSynced(id: string, syncedAt?: string): Promise<voi
 export async function markTaskRemoteDeleted(id: string): Promise<void> {
   const db = await getDatabase();
 
-  await db.run(
+  await db.runAsync(
     `UPDATE tasks SET remote_deleted = 1, sync_status = ? WHERE id = ?`,
     ['synced', id]
   );
@@ -263,7 +270,7 @@ export async function upsertTasksFromCloud(tasks: any[]): Promise<void> {
     const existing = await getTask(task.id);
 
     if (existing) {
-      await db.run(
+      await db.runAsync(
         `UPDATE tasks SET
           goal_id = ?,
           description = ?,
@@ -301,7 +308,7 @@ export async function upsertTasksFromCloud(tasks: any[]): Promise<void> {
         ]
       );
     } else {
-      await db.run(
+      await db.runAsync(
         `INSERT INTO tasks (
           id, goal_id, description, priority, start_date, end_date,
           completion_percentage, actual_completion_date, is_repeat,
