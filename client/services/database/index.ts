@@ -73,20 +73,14 @@ class WebDatabase {
     const conditions: any[] = [];
 
     // 匹配所有 "column = ?" 或 "column = 'value'" 或 "column = "value"" 或 "column = 数字" 的模式
-    const equalsMatches = [...whereClause.matchAll(/(\w+)\s*=\s*(?:"([^"]+)"|'([^']+)'|\d+|\?)/g)];
+    // 注意：(\d+) 和 (\?) 需要放在捕获组中
+    const equalsMatches = [...whereClause.matchAll(/(\w+)\s*=\s*(?:"([^"]+)"|'([^']+)'|(\d+)|(\?))/g)];
     for (const match of equalsMatches) {
       const column = match[1];
       const doubleQuoteValue = match[2]; // 双引号字符串
       const singleQuoteValue = match[3]; // 单引号字符串
       const digitValue = match[4]; // 数字字面量值
-
-      console.log('[WebDatabase] equalsMatches match:', {
-        column,
-        match,
-        doubleQuoteValue,
-        singleQuoteValue,
-        digitValue
-      });
+      const placeholder = match[5]; // 占位符 ?
 
       if (doubleQuoteValue !== undefined) {
         // 字符串字面量值（如 "pending"）
@@ -97,7 +91,7 @@ class WebDatabase {
       } else if (digitValue !== undefined) {
         // 数字字面量值（如 0, 1）
         conditions.push({ column, operator: '=', value: parseInt(digitValue, 10) });
-      } else {
+      } else if (placeholder !== undefined) {
         // 参数占位符
         conditions.push({ column, operator: '=', paramIndex: conditions.filter(c => c.paramIndex !== undefined).length });
       }
