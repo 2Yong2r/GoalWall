@@ -422,7 +422,7 @@ export default function TodosScreen() {
             style={styles.viewMenuButton}
             onPress={() => setViewMenuVisible(true)}
           >
-            <FontAwesome6 name="list" size={20} color={theme.textPrimary} />
+            <FontAwesome6 name="calendar" size={20} color={theme.textPrimary} />
           </TouchableOpacity>
         </View>
 
