@@ -11,6 +11,8 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 import { createStyles } from './styles';
 import type { Goal, Task } from '@/types';
+import { localApiService } from '@/services/api';
+import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
 
 interface GoalWithStats extends Goal {
   progress: number;
@@ -30,30 +32,25 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
-  // 获取目标列表
+  // 获取目标列表（使用本地 API）
   const fetchGoals = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals`);
-      const result = await response.json();
-      if (result.success) {
-        setGoals(result.data);
-      }
+      const goals = await localApiService.getGoals();
+      setGoals(goals);
     } catch (error) {
       console.error('Failed to fetch goals:', error);
+      Alert.alert('错误', '获取目标列表失败');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // 获取所有任务
+  // 获取所有任务（使用本地 API）
   const fetchAllTasks = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks`);
-      const result = await response.json();
-      if (result.success) {
-        setAllTasks(result.data);
-      }
+      const tasks = await localApiService.getAllTasks();
+      setAllTasks(tasks);
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
     }
@@ -112,7 +109,7 @@ export default function HomeScreen() {
     setGoalsWithStats(newGoalsWithStats);
   }, [goals, allTasks]);
 
-  // 删除目标
+  // 删除目标（使用本地 API）
   const handleDeleteGoal = async (id: string) => {
     Alert.alert(
       '确认删除',
@@ -127,15 +124,12 @@ export default function HomeScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals/${id}`, {
-                method: 'DELETE',
-              });
-              const result = await response.json();
-              if (result.success) {
-                setGoals(prev => prev.filter(g => g.id !== id));
-              }
+              await localApiService.deleteGoal(id);
+              setGoals(prev => prev.filter(g => g.id !== id));
+              Alert.alert('成功', '目标已删除，云端同步中...');
             } catch (error) {
               console.error('Failed to delete goal:', error);
+              Alert.alert('错误', '删除目标失败');
             }
           },
         },
@@ -143,34 +137,23 @@ export default function HomeScreen() {
     );
   };
 
-  // 拖拽完成后保存新的顺序
+  // 拖拽完成后保存新的顺序（使用本地 API）
   const handleDragEnd = async ({ data }: { data: GoalWithStats[] }) => {
     setGoalsWithStats(data);
 
-    // 保存新的顺序到后端
+    // 保存新的顺序
     const orders = data.map((item, index) => ({
       id: item.id,
       order: index + 1,
     }));
 
     try {
-      /**
-       * 服务端文件：server/src/routes/goals.ts
-       * 接口：POST /api/v1/goals/reorder
-       * Body 参数：orders: { id: string, order: number }[]
-       */
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals/reorder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orders }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        // 重新获取目标列表以更新原始 goals 数据
-        fetchGoals();
-      }
+      await localApiService.reorderGoals(orders);
+      // 重新获取目标列表以更新原始 goals 数据
+      await fetchGoals();
     } catch (error) {
       console.error('Failed to update goal orders:', error);
+      Alert.alert('错误', '更新顺序失败');
     }
   };
 
@@ -275,12 +258,15 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <ThemedText variant="h2" color={theme.textPrimary}>目标墙</ThemedText>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => router.push('/goal-detail', { mode: 'create' })}
-          >
-            <FontAwesome6 name="plus" size={20} color="white" />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <SyncStatusIndicator />
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => router.push('/goal-detail', { mode: 'create' })}
+            >
+              <FontAwesome6 name="plus" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <DraggableFlatList

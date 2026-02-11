@@ -15,6 +15,11 @@ export const createStyles = (theme: Theme) => {
       paddingVertical: Spacing.xl,
       paddingTop: Spacing['2xl'],
     },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.md,
+    },
     addButton: {
       width: 44,
       height: 44,

@@ -7,11 +7,7 @@ import { syncManager } from '@/services/sync';
  * 在应用启动时初始化数据库和同步管理器
  */
 export function useAppInitialization() {
-  useEffect(() => {
-    initializeApp();
-  }, []);
-
-  async function initializeApp() {
+  const initializeApp = async () => {
     try {
       // 初始化数据库
       await initDatabase();
@@ -31,5 +27,9 @@ export function useAppInitialization() {
     } catch (error) {
       console.error('[App] Failed to initialize:', error);
     }
-  }
+  };
+
+  useEffect(() => {
+    initializeApp();
+  }, []);
 }

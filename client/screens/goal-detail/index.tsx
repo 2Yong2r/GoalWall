@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { createStyles } from './styles';
 import type { Goal, Task } from '@/types';
+import { localApiService } from '@/services/api';
 
 export default function GoalDetailScreen() {
   const { theme } = useTheme();
@@ -26,36 +27,34 @@ export default function GoalDetailScreen() {
   const isCreateMode = params.mode === 'create';
   const isEditingOrCreating = isCreateMode || isEditMode;
 
-  // 获取目标详情
+  // 获取目标详情（使用本地 API）
   const fetchGoalDetail = useCallback(async () => {
     if (!params.goalId || isCreateMode) return;
 
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals/${params.goalId}`);
-      const result = await response.json();
-      if (result.success) {
-        setGoal(result.data);
-        setGoalName(result.data.name);
-        setGoalDescription(result.data.description || '');
+      const goalData = await localApiService.getGoal(params.goalId);
+      if (!goalData) {
+        throw new Error('Goal not found');
       }
+      setGoal(goalData);
+      setGoalName(goalData.name);
+      setGoalDescription(goalData.description || '');
     } catch (error) {
       console.error('Failed to fetch goal:', error);
+      Alert.alert('错误', '获取目标详情失败');
     } finally {
       setLoading(false);
     }
   }, [params.goalId, isCreateMode]);
 
-  // 获取目标任务
+  // 获取目标任务（使用本地 API）
   const fetchTasks = useCallback(async () => {
     if (!params.goalId || isCreateMode) return;
 
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks/goal/${params.goalId}`);
-      const result = await response.json();
-      if (result.success) {
-        setTasks(result.data);
-      }
+      const tasksData = await localApiService.getTasksByGoal(params.goalId);
+      setTasks(tasksData);
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
     }
@@ -87,43 +86,37 @@ export default function GoalDetailScreen() {
     }
   };
 
-  // 保存目标
+  // 保存目标（使用本地 API）
   const handleSaveGoal = async () => {
     if (!goalName.trim()) {
-      alert('请输入目标名称');
+      Alert.alert('提示', '请输入目标名称');
       return;
     }
 
     try {
-      const url = isCreateMode
-        ? `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals`
-        : `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals/${params.goalId}`;
-      const method = isCreateMode ? 'POST' : 'PUT';
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (isCreateMode) {
+        const newGoal = await localApiService.createGoal({
           name: goalName.trim(),
           description: goalDescription.trim() || null,
-        }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        if (isCreateMode) {
-          router.replace('/goal-detail', { goalId: result.data.id });
-        } else {
-          setGoal(result.data);
-          setIsEditMode(false);
-        }
+        });
+        router.replace('/goal-detail', { goalId: newGoal.id });
+        Alert.alert('成功', '目标已创建，云端同步中...');
+      } else {
+        const updatedGoal = await localApiService.updateGoal(params.goalId!, {
+          name: goalName.trim(),
+          description: goalDescription.trim() || null,
+        });
+        setGoal(updatedGoal);
+        setIsEditMode(false);
+        Alert.alert('成功', '目标已更新，云端同步中...');
       }
     } catch (error) {
       console.error('Failed to save goal:', error);
+      Alert.alert('错误', '保存目标失败');
     }
   };
 
-  // 删除任务
+  // 删除任务（使用本地 API）
   const handleDeleteTask = async (taskId: string) => {
     Alert.alert(
       '确认删除',
@@ -138,15 +131,12 @@ export default function GoalDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks/${taskId}`, {
-                method: 'DELETE',
-              });
-              const result = await response.json();
-              if (result.success) {
-                setTasks(prev => prev.filter(t => t.id !== taskId));
-              }
+              await localApiService.deleteTask(taskId);
+              setTasks(prev => prev.filter(t => t.id !== taskId));
+              Alert.alert('成功', '任务已删除，云端同步中...');
             } catch (error) {
               console.error('Failed to delete task:', error);
+              Alert.alert('错误', '删除任务失败');
             }
           },
         },

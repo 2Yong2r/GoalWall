@@ -60,9 +60,16 @@ export class LocalApiService {
       description?: string | null;
       order?: number;
     }
-  ): Promise<void> {
+  ): Promise<Goal> {
     await GoalDAL.updateGoal(id, data);
     syncManager.triggerSync();
+
+    // 返回更新后的目标
+    const goal = await GoalDAL.getGoal(id);
+    if (!goal) {
+      throw new Error('Goal not found after update');
+    }
+    return this.transformGoal(goal);
   }
 
   /**
@@ -70,6 +77,16 @@ export class LocalApiService {
    */
   static async deleteGoal(id: string): Promise<void> {
     await GoalDAL.deleteGoal(id);
+    syncManager.triggerSync();
+  }
+
+  /**
+   * 重新排序目标
+   */
+  static async reorderGoals(orders: { id: string; order: number }[]): Promise<void> {
+    for (const { id, order } of orders) {
+      await GoalDAL.updateGoal(id, { order });
+    }
     syncManager.triggerSync();
   }
 
@@ -82,11 +99,10 @@ export class LocalApiService {
   }
 
   /**
-   * 获取单个任务
+   * 获取所有任务（别名）
    */
-  static async getTask(id: string): Promise<Task | null> {
-    const task = await TaskDAL.getTask(id);
-    return task ? this.transformTask(task) : null;
+  static async getAllTasks(): Promise<Task[]> {
+    return this.getTasks();
   }
 
   /**
@@ -95,6 +111,21 @@ export class LocalApiService {
   static async getTasksByGoalId(goalId: string): Promise<Task[]> {
     const tasks = await TaskDAL.getTasksByGoalId(goalId);
     return tasks.map(this.transformTask);
+  }
+
+  /**
+   * 根据目标 ID 获取任务（别名）
+   */
+  static async getTasksByGoal(goalId: string): Promise<Task[]> {
+    return this.getTasksByGoalId(goalId);
+  }
+
+  /**
+   * 获取单个任务
+   */
+  static async getTask(id: string): Promise<Task | null> {
+    const task = await TaskDAL.getTask(id);
+    return task ? this.transformTask(task) : null;
   }
 
   /**
@@ -151,9 +182,16 @@ export class LocalApiService {
       repeatUnit?: string | null;
       repeatEndDate?: string | null;
     }
-  ): Promise<void> {
+  ): Promise<Task> {
     await TaskDAL.updateTask(id, data);
     syncManager.triggerSync();
+
+    // 返回更新后的任务
+    const task = await TaskDAL.getTask(id);
+    if (!task) {
+      throw new Error('Task not found after update');
+    }
+    return this.transformTask(task);
   }
 
   /**
@@ -162,6 +200,14 @@ export class LocalApiService {
   static async deleteTask(id: string): Promise<void> {
     await TaskDAL.deleteTask(id);
     syncManager.triggerSync();
+  }
+
+  /**
+   * 获取任务的更新记录
+   */
+  static async getTaskUpdates(taskId: string): Promise<any[]> {
+    const updates = await TaskDAL.getTaskUpdates(taskId);
+    return updates;
   }
 
   /**
@@ -334,3 +380,6 @@ export class LocalApiService {
 
 // 导出单例
 export const localApi = LocalApiService;
+
+// 导出类以便直接使用
+export const localApiService = LocalApiService;

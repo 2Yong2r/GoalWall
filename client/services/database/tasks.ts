@@ -205,6 +205,18 @@ export async function getTasksByGoalId(goalId: string): Promise<TaskRow[]> {
 }
 
 /**
+ * 获取任务的更新记录
+ */
+export async function getTaskUpdates(taskId: string): Promise<any[]> {
+  const db = getDatabase();
+  const result = await db.getAllAsync(
+    'SELECT * FROM task_updates WHERE task_id = ? AND remote_deleted = 0 ORDER BY created_at DESC',
+    [taskId]
+  );
+  return result;
+}
+
+/**
  * 获取所有需要同步的任务
  */
 export async function getTasksToSync(): Promise<TaskRow[]> {

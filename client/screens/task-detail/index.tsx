@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, TouchableOpacity, ScrollView, Modal, TextInput, KeyboardAvoidingView, Platform, Pressable, FlatList } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Modal, TextInput, KeyboardAvoidingView, Platform, Pressable, FlatList, Alert } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeRouter, useSafeSearchParams } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
@@ -11,6 +11,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { RepeatConfigInput, type RepeatConfig } from '@/components/RepeatConfigInput';
 import { createStyles } from './styles';
 import type { Task, TaskUpdate } from '@/types';
+import { localApiService } from '@/services/api';
 
 export default function TaskDetailScreen() {
   const { theme } = useTheme();
@@ -39,46 +40,44 @@ export default function TaskDetailScreen() {
     repeatEndDate: null,
   });
 
-  // 获取任务详情
+  // 获取任务详情（使用本地 API）
   const fetchTaskDetail = useCallback(async () => {
     if (!params.taskId || isCreateMode) return;
 
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks/${params.taskId}`);
-      const result = await response.json();
-      if (result.success) {
-        setTask(result.data);
-        setDescription(result.data.description);
-        setPriority((result.data.priority as 'high' | 'medium' | 'low') || 'medium');
-        setCompletionPercentage(String(result.data.completionPercentage));
-        setStartDate(result.data.startDate ? new Date(result.data.startDate) : null);
-        setEndDate(result.data.endDate ? new Date(result.data.endDate) : null);
-        // 加载重复配置
-        setRepeatConfig({
-          isRepeat: result.data.isRepeat || false,
-          repeatInterval: result.data.repeatInterval || 1,
-          repeatUnit: result.data.repeatUnit || 'day',
-          repeatEndDate: result.data.repeatEndDate ? new Date(result.data.repeatEndDate) : null,
-        });
+      const taskData = await localApiService.getTask(params.taskId);
+      if (!taskData) {
+        throw new Error('Task not found');
       }
+      setTask(taskData);
+      setDescription(taskData.description);
+      setPriority((taskData.priority as 'high' | 'medium' | 'low') || 'medium');
+      setCompletionPercentage(String(taskData.completionPercentage));
+      setStartDate(taskData.startDate ? new Date(taskData.startDate) : null);
+      setEndDate(taskData.endDate ? new Date(taskData.endDate) : null);
+      // 加载重复配置
+      setRepeatConfig({
+        isRepeat: taskData.isRepeat || false,
+        repeatInterval: taskData.repeatInterval || 1,
+        repeatUnit: taskData.repeatUnit || 'day',
+        repeatEndDate: taskData.repeatEndDate ? new Date(taskData.repeatEndDate) : null,
+      });
     } catch (error) {
       console.error('Failed to fetch task:', error);
+      Alert.alert('错误', '获取任务详情失败');
     } finally {
       setLoading(false);
     }
   }, [params.taskId, isCreateMode]);
 
-  // 获取更新记录
+  // 获取更新记录（使用本地 API）
   const fetchUpdates = useCallback(async () => {
     if (!params.taskId || isCreateMode) return;
 
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks/${params.taskId}/updates`);
-      const result = await response.json();
-      if (result.success) {
-        setUpdates(result.data);
-      }
+      const updatesData = await localApiService.getTaskUpdates(params.taskId);
+      setUpdates(updatesData);
     } catch (error) {
       console.error('Failed to fetch updates:', error);
     }
@@ -91,83 +90,83 @@ export default function TaskDetailScreen() {
     }, [fetchTaskDetail, fetchUpdates])
   );
 
-  // 保存任务
+  // 保存任务（使用本地 API）
   const handleSave = async () => {
     if (!description.trim()) {
-      alert('请输入任务描述');
+      Alert.alert('提示', '请输入任务描述');
       return;
     }
 
     try {
-      const url = isCreateMode
-        ? `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks`
-        : `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks/${params.taskId}`;
-      const method = isCreateMode ? 'POST' : 'PUT';
-
-      const body: any = {
+      const taskData: any = {
         description: description.trim(),
         priority: priority,
         completionPercentage: parseInt(completionPercentage) || 0,
+        isRepeat: repeatConfig.isRepeat,
+        repeatInterval: repeatConfig.repeatInterval,
+        repeatUnit: repeatConfig.repeatUnit,
+        repeatEndDate: repeatConfig.repeatEndDate ? repeatConfig.repeatEndDate.toISOString() : null,
       };
 
       if (params.goalId) {
-        body.goalId = params.goalId;
+        taskData.goalId = params.goalId;
       }
 
       if (startDate) {
-        body.startDate = startDate.toISOString();
+        taskData.startDate = startDate.toISOString();
       }
 
       if (endDate) {
-        body.endDate = endDate.toISOString();
+        taskData.endDate = endDate.toISOString();
       }
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...body,
-          isRepeat: repeatConfig.isRepeat,
-          repeatInterval: repeatConfig.repeatInterval,
-          repeatUnit: repeatConfig.repeatUnit,
-          repeatEndDate: repeatConfig.repeatEndDate ? repeatConfig.repeatEndDate.toISOString() : null,
-        }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        if (isCreateMode) {
-          router.back();
-        } else {
-          setTask(result.data);
-          fetchUpdates(); // 刷新更新记录
-        }
+      if (isCreateMode) {
+        await localApiService.createTask(taskData);
+        Alert.alert('成功', '任务已创建，云端同步中...');
+        router.back();
+      } else {
+        const updatedTask = await localApiService.updateTask(params.taskId!, taskData);
+        setTask(updatedTask);
+        await fetchUpdates(); // 刷新更新记录
+        Alert.alert('成功', '任务已更新，云端同步中...');
       }
     } catch (error) {
       console.error('Failed to save task:', error);
+      Alert.alert('错误', '保存任务失败');
     }
   };
 
-  // 删除任务
+  // 删除任务（使用本地 API）
   const handleDelete = async () => {
     if (!params.taskId || isCreateMode) {
       router.back();
       return;
     }
 
-    if (!confirm('确定要删除这个任务吗？')) return;
-
-    try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks/${params.taskId}`, {
-        method: 'DELETE',
-      });
-      const result = await response.json();
-      if (result.success) {
-        router.back();
-      }
-    } catch (error) {
-      console.error('Failed to delete task:', error);
-    }
+    Alert.alert(
+      '确认删除',
+      '确定要删除这个任务吗？此操作无法撤销。',
+      [
+        {
+          text: '取消',
+          style: 'cancel',
+        },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await localApiService.deleteTask(params.taskId!);
+              Alert.alert('成功', '任务已删除，云端同步中...');
+              router.back();
+            } catch (error) {
+              console.error('Failed to delete task:', error);
+              Alert.alert('错误', '删除任务失败');
+            }
+          },
+        },
+      ]
+    );
   };
 
   // 快捷设置完成百分比
