@@ -23,11 +23,12 @@ jobs:
         with:
           node-version: '20'
 
-      # 设置 pnpm
+      # 设置 pnpm（移除 version 参数，使用 package.json 中指定的版本）
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          # version: '9'  # ← 移除此行，使用 package.json 中的 packageManager
+          version: '9.0.0'  # ← 或者明确指定 9.0.0 与 package.json 保持一致
 
       # 设置 Java 环境
       - name: Setup Java
