@@ -42,7 +42,7 @@ export default function TaskDetailScreen() {
 
   // 获取任务详情（使用本地 API）
   const fetchTaskDetail = useCallback(async () => {
-    if (!params.taskId || isCreateMode) return;
+    if (!params.taskId) return;
 
     setLoading(true);
     try {
@@ -69,11 +69,11 @@ export default function TaskDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [params.taskId, isCreateMode]);
+  }, [params.taskId]);
 
   // 获取更新记录（使用本地 API）
   const fetchUpdates = useCallback(async () => {
-    if (!params.taskId || isCreateMode) return;
+    if (!params.taskId) return;
 
     try {
       const updatesData = await localApiService.getTaskUpdates(params.taskId);
@@ -81,13 +81,15 @@ export default function TaskDetailScreen() {
     } catch (error) {
       console.error('Failed to fetch updates:', error);
     }
-  }, [params.taskId, isCreateMode]);
+  }, [params.taskId]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchTaskDetail();
-      fetchUpdates();
-    }, [fetchTaskDetail, fetchUpdates])
+      if (!isCreateMode) {
+        fetchTaskDetail();
+        fetchUpdates();
+      }
+    }, [isCreateMode, fetchTaskDetail, fetchUpdates])
   );
 
   // 保存任务（使用本地 API）
