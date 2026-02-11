@@ -148,6 +148,8 @@ export default function TodosScreen() {
       }}
       renderRightActions={() => renderRightActions(item.id)}
       overshootRight={false}
+      friction={2}
+      rightThreshold={40}
     >
       <TouchableOpacity
         style={[

@@ -199,6 +199,8 @@ export default function HomeScreen() {
       }}
       renderRightActions={() => renderRightActions(item.id)}
       overshootRight={false}
+      friction={2}
+      rightThreshold={40}
     >
       <ScaleDecorator>
         <TouchableOpacity
