@@ -104,7 +104,7 @@ export const createStyles = (theme: Theme) => {
       alignItems: 'center',
       paddingHorizontal: Spacing.xl,
       width: 80,
-      gap: Spacing.xs,
+      height: '100%',
       marginBottom: Spacing.md,
     },
     emptyContainer: {

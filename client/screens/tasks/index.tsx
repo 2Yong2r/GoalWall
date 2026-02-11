@@ -85,7 +85,7 @@ export default function AllTasksScreen() {
         }}
       >
         <FontAwesome6 name="trash" size={20} color="white" />
-        <ThemedText variant="caption" color="white">删除</ThemedText>
+        <ThemedText variant="caption" color="white" style={{ marginTop: 4 }}>删除</ThemedText>
       </TouchableOpacity>
     );
   };
