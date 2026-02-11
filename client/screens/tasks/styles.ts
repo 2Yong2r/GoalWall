@@ -95,7 +95,6 @@ export const createStyles = (theme: Theme) => {
       paddingHorizontal: Spacing.xl,
       width: 80,
       height: '100%',
-      marginBottom: Spacing.xs,
     },
     emptyContainer: {
       alignItems: 'center',

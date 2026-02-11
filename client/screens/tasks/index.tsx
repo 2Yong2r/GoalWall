@@ -102,7 +102,6 @@ export default function AllTasksScreen() {
       friction={2}
       rightThreshold={40}
       onSwipeableClose={() => {
-        // 当 Swipeable 关闭时清理引用
         swipeableRefs.current.delete(item.id);
       }}
     >
@@ -140,32 +139,32 @@ export default function AllTasksScreen() {
           )}
         </View>
 
-      {/* 进度条 */}
-      <View style={styles.taskFooter}>
-        <View style={styles.progressBarContainer}>
-          <View style={[styles.progressBar, { width: `${item.completionPercentage}%` }]} />
+        {/* 进度条 */}
+        <View style={styles.taskFooter}>
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBar, { width: `${item.completionPercentage}%` }]} />
+          </View>
+          <ThemedText variant="caption" color={theme.textMuted}>
+            {item.completionPercentage}%
+          </ThemedText>
         </View>
-        <ThemedText variant="caption" color={theme.textMuted}>
-          {item.completionPercentage}%
-        </ThemedText>
-      </View>
 
-      {/* 日期信息 */}
-      {(item.startDate || item.endDate) && (
-        <View style={styles.dateInfo}>
-          {item.startDate && (
-            <ThemedText variant="caption" color={theme.textMuted}>
-              开始: {new Date(item.startDate).toLocaleDateString()}
-            </ThemedText>
-          )}
-          {item.endDate && (
-            <ThemedText variant="caption" color={theme.textMuted}>
-              结束: {new Date(item.endDate).toLocaleDateString()}
-            </ThemedText>
-          )}
-        </View>
-      )}
-    </TouchableOpacity>
+        {/* 日期信息 */}
+        {(item.startDate || item.endDate) && (
+          <View style={styles.dateInfo}>
+            {item.startDate && (
+              <ThemedText variant="caption" color={theme.textMuted}>
+                开始: {new Date(item.startDate).toLocaleDateString()}
+              </ThemedText>
+            )}
+            {item.endDate && (
+              <ThemedText variant="caption" color={theme.textMuted}>
+                结束: {new Date(item.endDate).toLocaleDateString()}
+              </ThemedText>
+            )}
+          </View>
+        )}
+      </TouchableOpacity>
     </Swipeable>
   );
 
