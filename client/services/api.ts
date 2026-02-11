@@ -26,6 +26,21 @@ export class LocalApiService {
   }
 
   /**
+   * 生成唯一 ID
+   */
+  private static generateId(): string {
+    // 尝试使用 crypto.randomUUID
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+
+    // 降级方案：生成时间戳 + 随机数的组合
+    const timestamp = Date.now().toString(36);
+    const randomPart = Math.random().toString(36).substring(2, 15);
+    return `${timestamp}-${randomPart}`;
+  }
+
+  /**
    * 创建目标
    */
   static async createGoal(data: {
@@ -33,7 +48,7 @@ export class LocalApiService {
     description?: string | null;
     order?: number;
   }): Promise<Goal> {
-    const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+    const id = this.generateId();
     await GoalDAL.createGoal({
       id,
       ...data,
@@ -143,7 +158,7 @@ export class LocalApiService {
     repeatUnit?: string | null;
     repeatEndDate?: string | null;
   }): Promise<Task> {
-    const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+    const id = this.generateId();
     await TaskDAL.createTask({ id, ...data });
     syncManager.triggerSync();
 
@@ -248,7 +263,7 @@ export class LocalApiService {
     repeatUnit?: string | null;
     repeatEndDate?: string | null;
   }): Promise<Todo> {
-    const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+    const id = this.generateId();
     await TodoDAL.createTodo({
       id,
       title: data.title,

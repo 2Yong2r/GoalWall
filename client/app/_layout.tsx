@@ -6,6 +6,7 @@ import { LogBox } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { useAppInitialization } from '@/hooks/useAppInitialization';
 
 LogBox.ignoreLogs([
   "TurboModuleRegistry.getEnforcing(...): 'RNMapsAirModule' could not be found",
@@ -13,6 +14,9 @@ LogBox.ignoreLogs([
 ]);
 
 export default function RootLayout() {
+  // 初始化应用（数据库和同步管理器）
+  useAppInitialization();
+
   return (
     <AuthProvider>
       <ThemeProvider>
