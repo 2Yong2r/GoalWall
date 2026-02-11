@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, FlatList, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable, Keyboard, Alert } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { useSafeRouter, useSafeSearchParams } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
 import { ThemedText } from '@/components/ThemedText';
@@ -16,6 +16,7 @@ export default function GoalDetailScreen() {
   const styles = createStyles(theme);
   const router = useSafeRouter();
   const params = useSafeSearchParams<{ goalId: string; mode?: 'create' }>();
+  const isFocused = useIsFocused();
 
   const [goal, setGoal] = useState<Goal | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -61,14 +62,12 @@ export default function GoalDetailScreen() {
   }, [params.goalId]);
 
   // 页面聚焦时刷新数据
-  useFocusEffect(
-    useCallback(() => {
-      if (params.goalId && !isCreateMode) {
-        fetchGoalDetail();
-        fetchTasks();
-      }
-    }, [params.goalId, isCreateMode, fetchGoalDetail, fetchTasks])
-  );
+  useEffect(() => {
+    if (isFocused && params.goalId && !isCreateMode) {
+      fetchGoalDetail();
+      fetchTasks();
+    }
+  }, [isFocused, params.goalId, params.mode]);
 
   // 开始编辑
   const handleStartEdit = () => {
