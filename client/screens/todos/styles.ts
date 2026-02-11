@@ -94,12 +94,15 @@ export const createStyles = (theme: Theme) => {
       backgroundColor: theme.backgroundDefault,
       borderRadius: BorderRadius.lg,
       padding: Spacing.lg,
+      gap: Spacing.sm,
     },
     todoCardCompleted: {
       opacity: 0.6,
     },
     todoMainContent: {
-      gap: Spacing.xs,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: Spacing.md,
     },
     checkbox: {
       width: 22,
@@ -114,9 +117,13 @@ export const createStyles = (theme: Theme) => {
       backgroundColor: theme.primary,
       borderColor: theme.primary,
     },
+    todoContent: {
+      flex: 1,
+    },
     todoTitleRow: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
       gap: Spacing.sm,
     },
     todoTitle: {
@@ -127,14 +134,8 @@ export const createStyles = (theme: Theme) => {
     todoTitleCompleted: {
       textDecorationLine: 'line-through',
     },
-    todoInfoRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: Spacing.sm,
-      paddingLeft: 34, // 与复选框后的标题对齐 (22 checkbox + 12 gap)
-    },
-    todoDate: {
-      fontSize: 13,
+    todoDateInline: {
+      fontSize: 12,
     },
     swipeDeleteButton: {
       backgroundColor: '#EF4444',

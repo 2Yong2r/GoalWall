@@ -148,11 +148,21 @@ export default function TodosScreen() {
     );
   };
 
-  // 获取优先级颜色（用于图标）
-  const getPriorityColor = (priority: string, isCompleted: boolean = false) => {
+  // 获取优先级边框颜色（用于复选框）
+  const getPriorityBorderColor = (priority: string, isCompleted: boolean) => {
     if (isCompleted) {
       return '#9CA3AF'; // 完成状态用灰色
     }
+    switch (priority) {
+      case 'high': return '#F97316'; // 橙色
+      case 'medium': return '#3B82F6'; // 蓝色
+      case 'low': return '#9CA3AF'; // 灰色
+      default: return '#9CA3AF';
+    }
+  };
+
+  // 获取优先级背景色（用于复选框选中状态）
+  const getPriorityCheckBgColor = (priority: string) => {
     switch (priority) {
       case 'high': return '#F97316'; // 橙色
       case 'medium': return '#3B82F6'; // 蓝色
@@ -172,14 +182,6 @@ export default function TodosScreen() {
       case 'low': return '#9CA3AF'; // 灰色
       default: return '#9CA3AF';
     }
-  };
-
-  // 格式化日期
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${month}月${day}日`;
   };
 
   // 渲染删除操作
@@ -223,49 +225,45 @@ export default function TodosScreen() {
         activeOpacity={0.7}
       >
         <View style={styles.todoMainContent}>
-          {/* 第一行：复选框 + 标题 + 优先级图标 */}
-          <View style={styles.todoTitleRow}>
-            <TouchableOpacity
-              style={styles.checkbox}
-              onPress={() => handleToggleTodo(item.id, item.status)}
-              activeOpacity={0.7}
-            >
-              {item.status === 'completed' && (
-                <FontAwesome6 name="check" size={12} color="white" />
-              )}
-            </TouchableOpacity>
-            <ThemedText
-              variant="body"
-              color={item.status === 'completed' ? theme.textMuted : theme.textPrimary}
-              style={[
-                styles.todoTitle,
-                item.status === 'completed' && styles.todoTitleCompleted
-              ]}
-              numberOfLines={1}
-            >
-              {item.title}
-            </ThemedText>
-            {/* 优先级图标 */}
-            <FontAwesome6
-              name="flag"
-              size={14}
-              color={getPriorityColor(item.priority, item.status === 'completed')}
-            />
-          </View>
+          <TouchableOpacity
+            style={[
+              styles.checkbox,
+              {
+                borderColor: getPriorityBorderColor(item.priority, item.status === 'completed'),
+              },
+              item.status === 'completed' && {
+                backgroundColor: getPriorityCheckBgColor(item.priority),
+                borderColor: getPriorityCheckBgColor(item.priority),
+              }
+            ]}
+            onPress={() => handleToggleTodo(item.id, item.status)}
+            activeOpacity={0.7}
+          >
+            {item.status === 'completed' && (
+              <FontAwesome6 name="check" size={12} color="white" />
+            )}
+          </TouchableOpacity>
 
-          {/* 第二行：截止日期 + 重复设置图标 */}
-          {(item.dueDate || item.isRepeat) && (
-            <View style={styles.todoInfoRow}>
+          <View style={styles.todoContent}>
+            <View style={styles.todoTitleRow}>
+              <ThemedText
+                variant="body"
+                color={item.status === 'completed' ? theme.textMuted : theme.textPrimary}
+                style={[
+                  styles.todoTitle,
+                  item.status === 'completed' && styles.todoTitleCompleted
+                ]}
+                numberOfLines={1}
+              >
+                {item.title}
+              </ThemedText>
               {item.dueDate && (
-                <ThemedText variant="caption" color={theme.textMuted} style={styles.todoDate}>
-                  {formatDate(item.dueDate)}
+                <ThemedText variant="caption" color={theme.textMuted} style={styles.todoDateInline}>
+                  {new Date(item.dueDate).toLocaleDateString()}
                 </ThemedText>
               )}
-              {item.isRepeat && (
-                <FontAwesome6 name="rotate-right" size={14} color={theme.textMuted} />
-              )}
             </View>
-          )}
+          </View>
         </View>
       </TouchableOpacity>
     </Swipeable>

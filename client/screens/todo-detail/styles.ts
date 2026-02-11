@@ -29,6 +29,12 @@ export const createStyles = (theme: Theme) => {
     inputGroup: {
       marginBottom: Spacing.md,
     },
+    inputRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.md,
+      marginBottom: Spacing.md,
+    },
     label: {
       marginBottom: Spacing.sm,
     },
@@ -40,6 +46,9 @@ export const createStyles = (theme: Theme) => {
       color: theme.textPrimary,
       backgroundColor: theme.backgroundDefault,
       minHeight: 44,
+    },
+    inputWithTitle: {
+      flex: 1,
     },
     textArea: {
       borderWidth: 1,
@@ -57,12 +66,12 @@ export const createStyles = (theme: Theme) => {
     // 优先级小旗子样式
     priorityFlagsContainer: {
       flexDirection: 'row',
-      gap: Spacing.md,
+      gap: Spacing.xs,
     },
     priorityFlag: {
-      width: 40,
-      height: 40,
-      borderRadius: 8,
+      width: 32,
+      height: 32,
+      borderRadius: 6,
       justifyContent: 'center',
       alignItems: 'center',
       position: 'relative',
@@ -98,6 +107,19 @@ export const createStyles = (theme: Theme) => {
       borderWidth: 1,
       backgroundColor: theme.backgroundDefault,
       minHeight: 40,
+    },
+    compactRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+    },
+    compactButtonWithRepeat: {
+      flex: 1,
+    },
+    repeatIconButton: {
+      padding: Spacing.sm,
+      width: 40,
+      justifyContent: 'center',
     },
     compactButtonText: {
       fontSize: 14,

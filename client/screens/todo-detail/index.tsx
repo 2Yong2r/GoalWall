@@ -7,10 +7,16 @@ import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { RepeatConfigInput, type RepeatConfig } from '@/components/RepeatConfigInput';
 import { createStyles } from './styles';
 import type { Todo } from '@/types';
 import { localApiService } from '@/services/api';
+
+type RepeatConfig = {
+  isRepeat: boolean;
+  repeatInterval: number;
+  repeatUnit: 'day' | 'week' | 'month' | 'year';
+  repeatEndDate: Date | null;
+};
 
 export default function TodoDetailScreen() {
   const { theme } = useTheme();
@@ -158,10 +164,10 @@ export default function TodoDetailScreen() {
       onPress={() => setPriority(value)}
       activeOpacity={0.7}
     >
-      <FontAwesome6 name="flag" size={18} color={priority === value ? 'white' : color} />
+      <FontAwesome6 name="flag" size={14} color={priority === value ? 'white' : color} />
       {priority === value && (
         <View style={styles.priorityFlagCheck}>
-          <FontAwesome6 name="check" size={10} color="white" />
+          <FontAwesome6 name="check" size={8} color="white" />
         </View>
       )}
     </TouchableOpacity>
@@ -190,16 +196,22 @@ export default function TodoDetailScreen() {
           contentContainerStyle={styles.contentContainer}
           keyboardShouldPersistTaps="handled"
         >
-          {/* 标题输入 */}
-          <View style={styles.inputGroup}>
+          {/* 标题输入 + 优先级选择 */}
+          <View style={styles.inputRow}>
             <TextInput
-              style={[styles.input, { borderColor: theme.border }]}
+              style={[styles.input, styles.inputWithTitle, { borderColor: theme.border }]}
               placeholder="标题"
               placeholderTextColor={theme.textMuted}
               value={title}
               onChangeText={setTitle}
               autoFocus={isCreateMode}
             />
+            {/* 优先级选择 - 小旗子图标 */}
+            <View style={styles.priorityFlagsContainer}>
+              {renderPriorityFlag('high', '#F97316')}
+              {renderPriorityFlag('medium', '#3B82F6')}
+              {renderPriorityFlag('low', '#9CA3AF')}
+            </View>
           </View>
 
           {/* 备注输入 */}
@@ -215,33 +227,38 @@ export default function TodoDetailScreen() {
             />
           </View>
 
-          {/* 优先级选择 - 小旗子图标 */}
+          {/* 截止日期 + 重复设置 */}
           <View style={styles.inputGroup}>
-            <ThemedText variant="caption" color={theme.textSecondary} style={styles.compactLabel}>
-              优先级 *
-            </ThemedText>
-            <View style={styles.priorityFlagsContainer}>
-              {renderPriorityFlag('high', '#F97316')}
-              {renderPriorityFlag('medium', '#3B82F6')}
-              {renderPriorityFlag('low', '#9CA3AF')}
-            </View>
-          </View>
-
-          {/* 截止日期 */}
-          <View style={styles.inputGroup}>
-            <TouchableOpacity
-              style={[styles.compactButton, { borderColor: theme.border }]}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <FontAwesome6 name="calendar" size={14} color={theme.textMuted} />
-              <ThemedText
-                variant="body"
-                color={dueDate ? theme.textPrimary : theme.textMuted}
-                style={styles.compactButtonText}
+            <View style={styles.compactRow}>
+              <TouchableOpacity
+                style={[styles.compactButton, styles.compactButtonWithRepeat, { borderColor: theme.border }]}
+                onPress={() => setShowDatePicker(true)}
               >
-                {dueDate ? dueDate.toLocaleDateString() : '截止日期'}
-              </ThemedText>
-            </TouchableOpacity>
+                <FontAwesome6 name="calendar" size={14} color={theme.textMuted} />
+                <ThemedText
+                  variant="body"
+                  color={dueDate ? theme.textPrimary : theme.textMuted}
+                  style={styles.compactButtonText}
+                >
+                  {dueDate ? dueDate.toLocaleDateString() : '截止日期'}
+                </ThemedText>
+              </TouchableOpacity>
+              {/* 重复设置图标 */}
+              <TouchableOpacity
+                style={[
+                  styles.compactButton,
+                  styles.repeatIconButton,
+                  { borderColor: repeatConfig.isRepeat ? theme.primary : theme.border }
+                ]}
+                onPress={() => setRepeatConfig({ ...repeatConfig, isRepeat: !repeatConfig.isRepeat })}
+              >
+                <FontAwesome6
+                  name="rotate-right"
+                  size={14}
+                  color={repeatConfig.isRepeat ? theme.primary : theme.textMuted}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {showDatePicker && (
@@ -252,13 +269,6 @@ export default function TodoDetailScreen() {
               onChange={handleDateChange}
             />
           )}
-
-          {/* 重复设置 */}
-          <RepeatConfigInput
-            value={repeatConfig}
-            onChange={setRepeatConfig}
-            compact
-          />
 
           {/* 按钮组 */}
           <View style={styles.buttonGroup}>
