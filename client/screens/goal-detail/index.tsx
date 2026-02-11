@@ -100,7 +100,6 @@ export default function GoalDetailScreen() {
           description: goalDescription.trim() || null,
         });
         router.replace('/goal-detail', { goalId: newGoal.id });
-        Alert.alert('成功', '目标已创建，云端同步中...');
       } else {
         const updatedGoal = await localApiService.updateGoal(params.goalId!, {
           name: goalName.trim(),
@@ -108,7 +107,6 @@ export default function GoalDetailScreen() {
         });
         setGoal(updatedGoal);
         setIsEditMode(false);
-        Alert.alert('成功', '目标已更新，云端同步中...');
       }
     } catch (error) {
       console.error('Failed to save goal:', error);

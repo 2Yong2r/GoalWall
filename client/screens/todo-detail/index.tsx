@@ -88,10 +88,8 @@ export default function TodoDetailScreen() {
 
       if (isCreateMode) {
         await localApiService.createTodo(todoData);
-        Alert.alert('成功', '待办已创建，云端同步中...');
       } else {
         await localApiService.updateTodo(params.todoId!, todoData);
-        Alert.alert('成功', '待办已更新，云端同步中...');
       }
 
       router.back();

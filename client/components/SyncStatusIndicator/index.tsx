@@ -1,11 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { syncManager } from '@/services/sync';
-import { formatDistanceToNow } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
 
 export function SyncStatusIndicator() {
   const { theme } = useTheme();
@@ -45,25 +42,7 @@ export function SyncStatusIndicator() {
     }
   };
 
-  const getStatusText = () => {
-    switch (status.status) {
-      case 'syncing':
-        return '同步中...';
-      case 'success':
-        if (status.lastSyncTime) {
-          return `上次同步：${formatDistanceToNow(new Date(status.lastSyncTime), {
-            addSuffix: true,
-            locale: zhCN,
-          })}`;
-        }
-        return '已同步';
-      case 'error':
-        return status.errorMessage || '同步失败';
-      default:
-        return '等待同步';
-    }
-  };
-
+  // 只在非 idle 状态显示图标
   if (status.status === 'idle') {
     return null;
   }
@@ -72,29 +51,15 @@ export function SyncStatusIndicator() {
     <View style={styles.container}>
       <FontAwesome6
         name={getStatusIcon() as any}
-        size={12}
+        size={18}
         color={getStatusColor()}
-        style={styles.icon}
       />
-      <ThemedText
-        variant="caption"
-        color={getStatusColor()}
-        style={styles.text}
-      >
-        {getStatusText()}
-      </ThemedText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  icon: {},
-  text: {
-    fontSize: 12,
+    padding: 8,
   },
 });

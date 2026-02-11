@@ -122,13 +122,11 @@ export default function TaskDetailScreen() {
 
       if (isCreateMode) {
         await localApiService.createTask(taskData);
-        Alert.alert('成功', '任务已创建，云端同步中...');
         router.back();
       } else {
         const updatedTask = await localApiService.updateTask(params.taskId!, taskData);
         setTask(updatedTask);
         await fetchUpdates(); // 刷新更新记录
-        Alert.alert('成功', '任务已更新，云端同步中...');
       }
     } catch (error) {
       console.error('Failed to save task:', error);
