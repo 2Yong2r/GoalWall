@@ -65,28 +65,70 @@ class WebDatabase {
   private filterRecords(records: any[], whereClause: string, params: any[]): any[] {
     if (!whereClause) return records;
     
+    // 解析 WHERE 子句中的条件
+    const conditions: any[] = [];
+    
+    // 匹配所有 "column = ?" 或 "column = 'value'" 或 "column = "value"" 的模式
+    const equalsMatches = [...whereClause.matchAll(/(\w+)\s*=\s*(?:"([^"]+)"|'([^']+)'|\?)/g)];
+    for (const match of equalsMatches) {
+      const column = match[1];
+      const literalValue = match[2] || match[3]; // 字面量值
+      if (literalValue !== undefined) {
+        // 字面量值（如 "pending"）
+        conditions.push({ column, operator: '=', value: literalValue });
+      } else {
+        // 参数占位符
+        conditions.push({ column, operator: '=', paramIndex: conditions.filter(c => c.paramIndex !== undefined).length });
+      }
+    }
+    
+    // 匹配 "column IS NULL"
+    const isNullMatches = [...whereClause.matchAll(/(\w+)\s+IS\s+NULL/gi)];
+    for (const match of isNullMatches) {
+      conditions.push({ column: match[1], operator: 'IS NULL' });
+    }
+    
+    // 匹配 "column IS NOT NULL"
+    const isNotNullMatches = [...whereClause.matchAll(/(\w+)\s+IS\s+NOT\s+NULL/gi)];
+    for (const match of isNotNullMatches) {
+      conditions.push({ column: match[1], operator: 'IS NOT NULL' });
+    }
+    
+    // 匹配 "column <= ?"
+    const lessThanOrEqualMatches = [...whereClause.matchAll(/(\w+)\s*<=\s*\?/g)];
+    for (const match of lessThanOrEqualMatches) {
+      conditions.push({ column: match[1], operator: '<=', paramIndex: conditions.filter(c => c.paramIndex !== undefined).length });
+    }
+    
+    // 匹配 "column >= ?"
+    const greaterThanOrEqualMatches = [...whereClause.matchAll(/(\w+)\s*>=\s*\?/g)];
+    for (const match of greaterThanOrEqualMatches) {
+      conditions.push({ column: match[1], operator: '>=', paramIndex: conditions.filter(c => c.paramIndex !== undefined).length });
+    }
+    
     return records.filter(record => {
-      // 简化的 WHERE 子句解析，只支持 id = ? 和 remote_deleted = ?
-      const idMatch = whereClause.match(/id\s*=\s*\?/);
-      const remoteDeletedMatch = whereClause.match(/remote_deleted\s*=\s*\?/);
-      const deletedAtMatch = whereClause.match(/deleted_at\s+IS\s+NULL/i);
-      
-      if (idMatch && remoteDeletedMatch) {
-        return record.id === params[0] && record.remote_deleted === params[1];
-      } else if (idMatch) {
-        return record.id === params[0];
-      } else if (remoteDeletedMatch) {
-        return record.remote_deleted === params[0];
-      } else if (deletedAtMatch) {
-        return record.deleted_at === null || record.deleted_at === undefined;
+      for (const condition of conditions) {
+        const columnValue = record[condition.column];
+        const expectedValue = condition.paramIndex !== undefined ? params[condition.paramIndex] : condition.value;
+        
+        switch (condition.operator) {
+          case '=':
+            if (columnValue !== expectedValue) return false;
+            break;
+          case 'IS NULL':
+            if (columnValue !== null && columnValue !== undefined) return false;
+            break;
+          case 'IS NOT NULL':
+            if (columnValue === null || columnValue === undefined) return false;
+            break;
+          case '<=':
+            if (columnValue === null || columnValue === undefined || columnValue > expectedValue) return false;
+            break;
+          case '>=':
+            if (columnValue === null || columnValue === undefined || columnValue < expectedValue) return false;
+            break;
+        }
       }
-      
-      // 支持简单的 sync_status = "pending"
-      const syncStatusMatch = whereClause.match(/sync_status\s*=\s*"(\w+)"/);
-      if (syncStatusMatch) {
-        return record.sync_status === syncStatusMatch[1] && record.remote_deleted === 0;
-      }
-      
       return true;
     });
   }
