@@ -112,7 +112,34 @@ export default function TodoDetailScreen() {
       }
     } catch (error) {
       console.error('Failed to save todo:', error);
-      Alert.alert('错误', '保存待办失败');
+
+      // 检查是否是数据库字段缺失的错误
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('no such column: start_time') ||
+          errorMessage.includes('no such column: end_time')) {
+        Alert.alert(
+          '数据库需要更新',
+          '请刷新页面以更新数据库结构，然后重试。',
+          [
+            {
+              text: '取消',
+              style: 'cancel',
+            },
+            {
+              text: '刷新页面',
+              onPress: () => {
+                if (Platform.OS === 'web') {
+                  location.reload();
+                } else {
+                  Alert.alert('提示', '请在移动设备上重新启动应用');
+                }
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert('错误', '保存待办失败：' + errorMessage);
+      }
     }
   };
 

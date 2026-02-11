@@ -379,45 +379,98 @@ export async function getDatabase(): Promise<any> {
  */
 async function migrateTodosTable(db: any): Promise<void> {
   try {
-    // 检查是否是 SQLite 数据库（Web 环境不需要迁移）
+    console.log('[Database] Checking todos table for migration...');
+
     if (Platform.OS === 'web') {
-      console.log('[Database] Skipping migration for Web database');
-      return;
-    }
+      // Web 环境：迁移 AsyncStorage 中的数据
+      console.log('[Database] Migrating Web database...');
 
-    console.log('[Database] Checking todos table structure for migration...');
+      const STORAGE_PREFIX = '@goalwall_db_';
+      const allKeys = await AsyncStorage.getAllKeys();
+      const todoKeys = allKeys.filter(key =>
+        key.startsWith(`${STORAGE_PREFIX}todos_`) &&
+        !key.startsWith(`${STORAGE_PREFIX}table_`)
+      );
 
-    // 检查表结构
-    const tableInfo = await db.getAllAsync('PRAGMA table_info(todos)');
-    const columns = tableInfo.map((row: any) => row.name);
-    console.log('[Database] Current todos columns:', columns);
+      console.log(`[Database] Found ${todoKeys.length} todo records to migrate`);
 
-    // 添加 start_time 字段（如果不存在）
-    if (!columns.includes('start_time')) {
-      console.log('[Database] Adding start_time column...');
-      await db.execAsync('ALTER TABLE todos ADD COLUMN start_time TEXT');
-      console.log('[Database] start_time column added');
-    }
+      if (todoKeys.length > 0) {
+        const records = await AsyncStorage.multiGet(todoKeys);
+        let migratedCount = 0;
 
-    // 添加 end_time 字段（如果不存在）
-    if (!columns.includes('end_time')) {
-      console.log('[Database] Adding end_time column...');
-      await db.execAsync('ALTER TABLE todos ADD COLUMN end_time TEXT');
-      console.log('[Database] end_time column added');
+        for (const [key, value] of records) {
+          if (value) {
+            try {
+              const record = JSON.parse(value);
+              let updated = false;
 
-      // 如果存在旧的 due_date 字段，将其迁移到 end_time
-      if (columns.includes('due_date')) {
-        console.log('[Database] Migrating due_date to end_time...');
-        await db.execAsync(`
-          UPDATE todos
-          SET end_time = due_date
-          WHERE end_time IS NULL AND due_date IS NOT NULL
-        `);
-        console.log('[Database] Migration completed');
+              // 迁移 due_date 到 end_time
+              if (record.due_date !== undefined && record.end_time === undefined) {
+                record.end_time = record.due_date;
+                delete record.due_date;
+                updated = true;
+              }
+
+              // 确保 start_time 字段存在
+              if (record.start_time === undefined) {
+                record.start_time = null;
+                updated = true;
+              }
+
+              // 确保 end_time 字段存在
+              if (record.end_time === undefined) {
+                record.end_time = null;
+                updated = true;
+              }
+
+              if (updated) {
+                await AsyncStorage.setItem(key, JSON.stringify(record));
+                migratedCount++;
+              }
+            } catch (error) {
+              console.error('[Database] Failed to migrate record:', key, error);
+            }
+          }
+        }
+
+        console.log(`[Database] Migrated ${migratedCount} todo records`);
       }
-    }
+    } else {
+      // 移动环境：迁移 SQLite 表结构
+      console.log('[Database] Migrating mobile database...');
 
-    console.log('[Database] Todos table migration completed');
+      // 检查表结构
+      const tableInfo = await db.getAllAsync('PRAGMA table_info(todos)');
+      const columns = tableInfo.map((row: any) => row.name);
+      console.log('[Database] Current todos columns:', columns);
+
+      // 添加 start_time 字段（如果不存在）
+      if (!columns.includes('start_time')) {
+        console.log('[Database] Adding start_time column...');
+        await db.execAsync('ALTER TABLE todos ADD COLUMN start_time TEXT');
+        console.log('[Database] start_time column added');
+      }
+
+      // 添加 end_time 字段（如果不存在）
+      if (!columns.includes('end_time')) {
+        console.log('[Database] Adding end_time column...');
+        await db.execAsync('ALTER TABLE todos ADD COLUMN end_time TEXT');
+        console.log('[Database] end_time column added');
+
+        // 如果存在旧的 due_date 字段，将其迁移到 end_time
+        if (columns.includes('due_date')) {
+          console.log('[Database] Migrating due_date to end_time...');
+          await db.execAsync(`
+            UPDATE todos
+            SET end_time = due_date
+            WHERE end_time IS NULL AND due_date IS NOT NULL
+          `);
+          console.log('[Database] Migration completed');
+        }
+      }
+
+      console.log('[Database] Todos table migration completed');
+    }
   } catch (error) {
     console.error('[Database] Failed to migrate todos table:', error);
     // 迁移失败不应该阻止应用启动
