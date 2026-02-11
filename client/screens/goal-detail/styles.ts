@@ -30,9 +30,12 @@ export const createStyles = (theme: Theme) => {
       borderRadius: BorderRadius.lg,
       padding: Spacing.lg,
       marginBottom: Spacing.xl,
+    },
+    goalHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
+      marginBottom: Spacing.sm,
     },
     goalName: {
       flex: 1,
@@ -45,6 +48,40 @@ export const createStyles = (theme: Theme) => {
       marginTop: Spacing.sm,
       fontSize: 14,
       lineHeight: 20,
+      marginBottom: Spacing.md,
+    },
+    goalProgressSection: {
+      marginTop: Spacing.md,
+      paddingTop: Spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: theme.borderLight,
+    },
+    progressHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: Spacing.sm,
+    },
+    goalProgressBar: {
+      height: 8,
+      backgroundColor: theme.border,
+      borderRadius: 4,
+      overflow: 'hidden',
+    },
+    goalProgressFill: {
+      height: '100%',
+      backgroundColor: theme.primary,
+    },
+    goalDateRange: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: Spacing.md,
+      paddingTop: Spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: theme.borderLight,
+    },
+    dateRangeText: {
+      marginLeft: Spacing.sm,
     },
     tasksSection: {
       flex: 1,
