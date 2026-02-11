@@ -28,8 +28,8 @@ export async function createGoal(goal: {
     const now = new Date().toISOString();
 
     await db.runAsync(
-      `INSERT INTO goals (id, name, description, order_num, created_at, updated_at, synced_at, sync_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO goals (id, name, description, order_num, created_at, updated_at, synced_at, sync_status, remote_deleted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         goal.id,
         goal.name,
@@ -38,7 +38,8 @@ export async function createGoal(goal: {
         now,
         now,
         null,
-        'pending'
+        'pending',
+        0
       ]
     );
     console.log('[Goals] Goal created successfully:', goal.id);

@@ -48,8 +48,8 @@ export async function createTask(task: {
         id, goal_id, description, priority, start_date, end_date,
         completion_percentage, actual_completion_date, is_repeat,
         repeat_interval, repeat_unit, repeat_end_date,
-        created_at, updated_at, synced_at, sync_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        created_at, updated_at, synced_at, sync_status, remote_deleted
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         task.id,
         task.goal_id || null,
@@ -66,7 +66,8 @@ export async function createTask(task: {
         now,
         now,
         null,
-        'pending'
+        'pending',
+        0
       ]
     );
     console.log('[Tasks] Task created successfully:', task.id);
