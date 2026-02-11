@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useFocusEffect } from 'expo-router';
 import { useSafeRouter } from '@/hooks/useSafeRouter';
@@ -116,17 +116,33 @@ export default function HomeScreen() {
 
   // 删除目标
   const handleDeleteGoal = async (id: string) => {
-    try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals/${id}`, {
-        method: 'DELETE',
-      });
-      const result = await response.json();
-      if (result.success) {
-        setGoals(prev => prev.filter(g => g.id !== id));
-      }
-    } catch (error) {
-      console.error('Failed to delete goal:', error);
-    }
+    Alert.alert(
+      '确认删除',
+      '确定要删除这个目标吗？此操作无法撤销。',
+      [
+        {
+          text: '取消',
+          style: 'cancel',
+        },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/goals/${id}`, {
+                method: 'DELETE',
+              });
+              const result = await response.json();
+              if (result.success) {
+                setGoals(prev => prev.filter(g => g.id !== id));
+              }
+            } catch (error) {
+              console.error('Failed to delete goal:', error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   // 拖拽完成后保存新的顺序

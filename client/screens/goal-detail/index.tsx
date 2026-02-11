@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, TouchableOpacity, FlatList, Modal, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable, Keyboard } from 'react-native';
+import { View, TouchableOpacity, FlatList, Modal, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable, Keyboard, Alert } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeRouter, useSafeSearchParams } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
@@ -106,17 +106,33 @@ export default function GoalDetailScreen() {
 
   // 删除任务
   const handleDeleteTask = async (taskId: string) => {
-    try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks/${taskId}`, {
-        method: 'DELETE',
-      });
-      const result = await response.json();
-      if (result.success) {
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-      }
-    } catch (error) {
-      console.error('Failed to delete task:', error);
-    }
+    Alert.alert(
+      '确认删除',
+      '确定要删除这个任务吗？此操作无法撤销。',
+      [
+        {
+          text: '取消',
+          style: 'cancel',
+        },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/tasks/${taskId}`, {
+                method: 'DELETE',
+              });
+              const result = await response.json();
+              if (result.success) {
+                setTasks(prev => prev.filter(t => t.id !== taskId));
+              }
+            } catch (error) {
+              console.error('Failed to delete task:', error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   // 添加新任务
