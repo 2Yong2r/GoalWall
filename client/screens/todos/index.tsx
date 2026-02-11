@@ -32,13 +32,30 @@ export default function TodosScreen() {
     try {
       const data = await localApiService.getTodos();
 
+      // 过滤：只保留未完成的，或者当天完成的
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const filteredData = data.filter(t => {
+        if (t.status !== 'completed') {
+          // 未完成的待办全部显示
+          return true;
+        }
+        // 已完成的待办，只显示今天完成的
+        if (!t.completedAt) return false;
+        const completedDate = new Date(t.completedAt);
+        return completedDate >= today && completedDate < tomorrow;
+      });
+
       // 根据视图模式排序
-      let sortedData = data;
+      let sortedData = filteredData;
 
       if (mode === 'timeline') {
         // 时间轴模式：有截止日期的按日期升序，无截止日期的排最后按标题排序
-        const withDueDate = data.filter(t => t.dueDate);
-        const withoutDueDate = data.filter(t => !t.dueDate);
+        const withDueDate = filteredData.filter(t => t.dueDate);
+        const withoutDueDate = filteredData.filter(t => !t.dueDate);
 
         // 有截止日期的按日期升序排列（由近到远）
         withDueDate.sort((a, b) => {
@@ -57,7 +74,7 @@ export default function TodosScreen() {
         sevenDaysLater.setDate(now.getDate() + 7);
 
         // 过滤出有截止日期且在7天内的待办
-        const upcomingTodos = data.filter(t => {
+        const upcomingTodos = filteredData.filter(t => {
           if (!t.dueDate) return false;
           const dueDate = new Date(t.dueDate);
           // 范围：今天到7天后（包含今天和第7天）
@@ -72,6 +89,13 @@ export default function TodosScreen() {
 
         sortedData = upcomingTodos;
       }
+
+      // 将已完成的事项排在最后
+      sortedData.sort((a, b) => {
+        if (a.status === 'completed' && b.status !== 'completed') return 1;
+        if (a.status !== 'completed' && b.status === 'completed') return -1;
+        return 0;
+      });
 
       setTodos(sortedData);
     } catch (error) {
