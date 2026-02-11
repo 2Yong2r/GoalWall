@@ -1,7 +1,19 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch:  # 仅手动触发
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: '后端 API 地址（例如：https://your-api.example.com）'
+        required: true
+        default: 'https://your-api.example.com'
+        type: string
+  workflow_call:
+    inputs:
+      backend_url:
+        description: '后端 API 地址'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -60,23 +72,49 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-expo-
 
-      # 设置后端 API 地址（重要！）
-      # 修改这里：将 BACKEND_URL 替换为你的实际后端地址
-      - name: Set Backend URL
+      # 获取后端 URL
+      - name: Get Backend URL
         id: backend-url
         run: |
-          # 方案 1：使用 GitHub Secrets（推荐用于生产环境）
-          # 在 GitHub 仓库设置中添加 SECRET：BACKEND_URL
-          # 例如：https://your-api.example.com
-          if [ -n "${{ secrets.BACKEND_URL }}" ]; then
+          # 优先级 1：workflow_dispatch 输入参数
+          if [ -n "${{ inputs.backend_url }}" ]; then
+            echo "url=${{ inputs.backend_url }}" >> $GITHUB_OUTPUT
+            echo "Using backend URL from workflow input"
+          # 优先级 2：GitHub Secrets
+          elif [ -n "${{ secrets.BACKEND_URL }}" ]; then
             echo "url=${{ secrets.BACKEND_URL }}" >> $GITHUB_OUTPUT
             echo "Using backend URL from Secrets"
-          # 方案 2：使用默认值（仅用于测试）
+          # 优先级 3：默认值（需要修改）
           else
             echo "url=https://your-api.example.com" >> $GITHUB_OUTPUT
             echo "⚠️  WARNING: Using default backend URL!"
-            echo "   Please set BACKEND_URL Secret in GitHub repository settings."
+            echo "   Please provide a valid backend URL via:"
+            echo "   1. GitHub Secret: BACKEND_URL"
+            echo "   2. Workflow input: backend_url"
+            exit 1
           fi
+
+      # 验证后端 URL
+      - name: Validate Backend URL
+        run: |
+          BACKEND_URL="${{ steps.backend-url.outputs.url }}"
+          echo "Backend URL: $BACKEND_URL"
+
+          # 检查 URL 格式
+          if ! echo "$BACKEND_URL" | grep -qE '^https?://'; then
+            echo "❌ Error: Invalid URL format"
+            echo "   URL must start with http:// or https://"
+            exit 1
+          fi
+
+          # 检查是否为默认值
+          if [ "$BACKEND_URL" = "https://your-api.example.com" ]; then
+            echo "❌ Error: Using default placeholder URL"
+            echo "   Please provide a real backend URL"
+            exit 1
+          fi
+
+          echo "✅ Backend URL is valid"
 
       # 生成 Android 原生项目
       - name: Prebuild Android
@@ -103,7 +141,7 @@ jobs:
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: app-debug-${{ github.run_number }}
           path: client/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
@@ -111,19 +149,18 @@ jobs:
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
+          name: app-release-${{ github.run_number }}
           path: client/android/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
 
-      # 发布 Release（如果推送的是 tag）
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            client/android/app/build/outputs/apk/debug/app-debug.apk
-            client/android/app/build/outputs/apk/release/app-release.apk
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # 显示构建信息
+      - name: Build Summary
+        run: |
+          echo "==================================="
+          echo "  APK Build Complete"
+          echo "==================================="
+          echo "Backend URL: ${{ steps.backend-url.outputs.url }}"
+          echo "Build Number: ${{ github.run_number }}"
+          echo ""
+          echo "Download APKs from:"
+          echo "  https://github.com/2Yong2r/GoalWall/actions/runs/${{ github.run_id }}"
