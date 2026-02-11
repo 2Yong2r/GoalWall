@@ -99,14 +99,20 @@ class SyncManager {
    */
   private async isBackendAvailable(): Promise<boolean> {
     if (!this.backendUrl) {
+      console.warn('[Sync] Backend URL is empty');
       return false;
     }
 
+    const healthUrl = `${this.backendUrl}/api/v1/health`;
+    console.log('[Sync] Checking backend health at:', healthUrl);
+
     try {
-      const response = await fetch(`${this.backendUrl}/api/v1/health`, {
+      const response = await fetch(healthUrl, {
         method: 'GET',
         signal: AbortSignal.timeout(5000),
       });
+      const result = await response.json();
+      console.log('[Sync] Backend health check result:', result);
       return response.ok;
     } catch (error) {
       console.error('[Sync] Backend health check failed:', error);
