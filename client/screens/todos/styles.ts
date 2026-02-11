@@ -201,14 +201,11 @@ export const createStyles = (theme: Theme) => {
     },
     calendarCell: {
       width: '14.28%',
-      borderWidth: 1,
-      borderColor: theme.border,
       backgroundColor: theme.backgroundDefault,
       minHeight: 120,
     },
     todayCell: {
-      borderWidth: 2,
-      borderColor: theme.primary,
+      backgroundColor: theme.primary + '08',
     },
     cellHeader: {
       paddingVertical: 4,
@@ -226,39 +223,13 @@ export const createStyles = (theme: Theme) => {
       padding: 4,
     },
     cellTodoItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      padding: 4,
+      paddingVertical: 4,
+      paddingHorizontal: 6,
       marginBottom: 2,
-      backgroundColor: theme.backgroundTertiary,
       borderRadius: 4,
     },
-    cellTodoItemCompleted: {
-      opacity: 0.5,
-    },
-    cellTodoDot: {
-      width: 6,
-      height: 6,
-      borderRadius: 3,
-      flexShrink: 0,
-    },
-    cellTodoDotCompleted: {
-      opacity: 0.4,
-    },
-    cellTodoDotHigh: {
-      backgroundColor: '#F97316',
-    },
-    cellTodoDotMedium: {
-      backgroundColor: '#3B82F6',
-    },
-    cellTodoDotLow: {
-      backgroundColor: '#9CA3AF',
-    },
     cellTodoTitle: {
-      flex: 1,
-      fontSize: 10,
-      lineHeight: 12,
+      fontSize: 11,
     },
     cellEmpty: {
       height: '100%',

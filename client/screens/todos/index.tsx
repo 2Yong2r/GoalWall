@@ -145,6 +145,19 @@ export default function TodosScreen() {
     }
   };
 
+  // 获取优先级背景色（用于日历视图）
+  const getPriorityBgColor = (priority: string, isCompleted: boolean) => {
+    if (isCompleted) {
+      return '#E5E7EB'; // 完成状态用灰色
+    }
+    switch (priority) {
+      case 'high': return '#F97316'; // 橙色
+      case 'medium': return '#3B82F6'; // 蓝色
+      case 'low': return '#9CA3AF'; // 灰色
+      default: return '#9CA3AF';
+    }
+  };
+
   // 渲染删除操作
   const renderRightActions = (todoId: string) => {
     return (
@@ -341,22 +354,16 @@ export default function TodosScreen() {
                 key={todo.id}
                 style={[
                   styles.cellTodoItem,
-                  todo.status === 'completed' && styles.cellTodoItemCompleted
+                  { backgroundColor: getPriorityBgColor(todo.priority, todo.status === 'completed') }
                 ]}
                 onPress={() => router.push('/todo-detail', { todoId: todo.id })}
               >
-                <View style={[
-                  styles.cellTodoDot,
-                  todo.status === 'completed' && styles.cellTodoDotCompleted,
-                  todo.priority === 'high' && styles.cellTodoDotHigh,
-                  todo.priority === 'medium' && styles.cellTodoDotMedium,
-                  todo.priority === 'low' && styles.cellTodoDotLow,
-                ]} />
                 <ThemedText
                   variant="caption"
-                  color={todo.status === 'completed' ? theme.textMuted : theme.textPrimary}
+                  color={todo.status === 'completed' ? '#6B7280' : 'white'}
                   style={styles.cellTodoTitle}
-                  numberOfLines={2}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
                   {todo.title}
                 </ThemedText>
