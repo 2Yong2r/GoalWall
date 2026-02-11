@@ -58,6 +58,20 @@ class SyncManager {
   }
 
   /**
+   * 获取同步状态（简版）
+   */
+  getSyncStatus(): SyncStatus {
+    return this.state.status;
+  }
+
+  /**
+   * 获取上次同步时间
+   */
+  getLastSyncTime(): string | null {
+    return this.state.lastSyncTime;
+  }
+
+  /**
    * 订阅同步状态变化
    */
   subscribe(listener: (state: SyncState) => void): () => void {

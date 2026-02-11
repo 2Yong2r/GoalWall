@@ -116,6 +116,18 @@ export default function SettingsScreen() {
               数据管理
             </ThemedText>
 
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/sync-settings')}>
+              <View style={styles.menuItemLeft}>
+                <View style={styles.menuItemIcon}>
+                  <FontAwesome6 name="rotate" size={18} color={theme.primary} />
+                </View>
+                <ThemedText variant="body" color={theme.textPrimary}>
+                  云同步设置
+                </ThemedText>
+              </View>
+              <FontAwesome6 name="chevron-right" size={16} color={theme.textMuted} />
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/trash')}>
               <View style={styles.menuItemLeft}>
                 <View style={styles.menuItemIcon}>

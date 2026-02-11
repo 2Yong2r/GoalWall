@@ -30,6 +30,7 @@ export default function RootLayout() {
             <Stack.Screen name="goal-detail" options={{ title: "" }} />
             <Stack.Screen name="task-detail" options={{ title: "" }} />
             <Stack.Screen name="todo-detail" options={{ title: "" }} />
+            <Stack.Screen name="sync-settings" options={{ title: "" }} />
             <Stack.Screen name="version-history" options={{ title: "" }} />
             <Stack.Screen name="trash" options={{ title: "" }} />
             <Stack.Screen name="skin-select" options={{ title: "" }} />
