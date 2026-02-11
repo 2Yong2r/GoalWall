@@ -374,6 +374,57 @@ export async function getDatabase(): Promise<any> {
 }
 
 /**
+ * 迁移 todos 表结构
+ * 将旧的 due_date 字段迁移为 start_time 和 end_time
+ */
+async function migrateTodosTable(db: any): Promise<void> {
+  try {
+    // 检查是否是 SQLite 数据库（Web 环境不需要迁移）
+    if (Platform.OS === 'web') {
+      console.log('[Database] Skipping migration for Web database');
+      return;
+    }
+
+    console.log('[Database] Checking todos table structure for migration...');
+
+    // 检查表结构
+    const tableInfo = await db.getAllAsync('PRAGMA table_info(todos)');
+    const columns = tableInfo.map((row: any) => row.name);
+    console.log('[Database] Current todos columns:', columns);
+
+    // 添加 start_time 字段（如果不存在）
+    if (!columns.includes('start_time')) {
+      console.log('[Database] Adding start_time column...');
+      await db.execAsync('ALTER TABLE todos ADD COLUMN start_time TEXT');
+      console.log('[Database] start_time column added');
+    }
+
+    // 添加 end_time 字段（如果不存在）
+    if (!columns.includes('end_time')) {
+      console.log('[Database] Adding end_time column...');
+      await db.execAsync('ALTER TABLE todos ADD COLUMN end_time TEXT');
+      console.log('[Database] end_time column added');
+
+      // 如果存在旧的 due_date 字段，将其迁移到 end_time
+      if (columns.includes('due_date')) {
+        console.log('[Database] Migrating due_date to end_time...');
+        await db.execAsync(`
+          UPDATE todos
+          SET end_time = due_date
+          WHERE end_time IS NULL AND due_date IS NOT NULL
+        `);
+        console.log('[Database] Migration completed');
+      }
+    }
+
+    console.log('[Database] Todos table migration completed');
+  } catch (error) {
+    console.error('[Database] Failed to migrate todos table:', error);
+    // 迁移失败不应该阻止应用启动
+  }
+}
+
+/**
  * 初始化数据库
  */
 export async function initDatabase(): Promise<void> {
@@ -441,7 +492,8 @@ export async function initDatabase(): Promise<void> {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         description TEXT,
-        due_date TEXT,
+        start_time TEXT,
+        end_time TEXT,
         priority TEXT NOT NULL DEFAULT 'medium',
         status TEXT NOT NULL DEFAULT 'pending',
         completed_at TEXT,
@@ -465,11 +517,15 @@ export async function initDatabase(): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_tasks_goal_id ON tasks(goal_id);
       CREATE INDEX IF NOT EXISTS idx_tasks_deleted_at ON tasks(deleted_at);
       CREATE INDEX IF NOT EXISTS idx_task_updates_task_id ON task_updates(task_id);
-      CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos(due_date);
+      CREATE INDEX IF NOT EXISTS idx_todos_start_time ON todos(start_time);
+      CREATE INDEX IF NOT EXISTS idx_todos_end_time ON todos(end_time);
       CREATE INDEX IF NOT EXISTS idx_todos_status ON todos(status);
       CREATE INDEX IF NOT EXISTS idx_todos_deleted_at ON todos(deleted_at);
     `);
     console.log('[Database] Indexes created');
+
+    // 执行数据库迁移（每次初始化时都检查）
+    await migrateTodosTable(db);
 
     console.log('[Database] Database initialized successfully');
   } catch (error) {
