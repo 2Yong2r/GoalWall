@@ -68,7 +68,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           "recordAudioAndroid": true
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true

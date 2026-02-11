@@ -1,0 +1,349 @@
+import {
+  getGoalsToSync,
+  markGoalSynced,
+  upsertGoalsFromCloud,
+  markGoalRemoteDeleted,
+} from '../database/goals';
+import {
+  getTasksToSync,
+  markTaskSynced,
+  upsertTasksFromCloud,
+  markTaskRemoteDeleted,
+} from '../database/tasks';
+import {
+  getTodosToSync,
+  markTodoSynced,
+  upsertTodosFromCloud,
+  markTodoRemoteDeleted,
+} from '../database/todos';
+
+export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error';
+
+interface SyncState {
+  status: SyncStatus;
+  lastSyncTime: string | null;
+  errorMessage: string | null;
+  pendingUploads: number;
+}
+
+class SyncManager {
+  private state: SyncState = {
+    status: 'idle',
+    lastSyncTime: null,
+    errorMessage: null,
+    pendingUploads: 0,
+  };
+
+  private listeners: Set<(state: SyncState) => void> = new Set();
+
+  private backendUrl: string = '';
+
+  constructor() {
+    // 从环境变量获取后端 URL
+    this.backendUrl = process.env.EXPO_PUBLIC_BACKEND_BASE_URL || '';
+  }
+
+  /**
+   * 设置后端 URL
+   */
+  setBackendUrl(url: string) {
+    this.backendUrl = url;
+  }
+
+  /**
+   * 获取当前同步状态
+   */
+  getState(): SyncState {
+    return { ...this.state };
+  }
+
+  /**
+   * 订阅同步状态变化
+   */
+  subscribe(listener: (state: SyncState) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  /**
+   * 通知状态变化
+   */
+  private notifyStateChange() {
+    this.listeners.forEach((listener) => listener(this.getState()));
+  }
+
+  /**
+   * 更新状态
+   */
+  private updateState(updates: Partial<SyncState>) {
+    this.state = { ...this.state, ...updates };
+    this.notifyStateChange();
+  }
+
+  /**
+   * 检查后端是否可用
+   */
+  private async isBackendAvailable(): Promise<boolean> {
+    if (!this.backendUrl) {
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${this.backendUrl}/api/v1/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000),
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('[Sync] Backend health check failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 上传 Goals 到云端
+   */
+  private async uploadGoals(): Promise<void> {
+    const goals = await getGoalsToSync();
+
+    for (const goal of goals) {
+      try {
+        const body: any = {
+          name: goal.name,
+          order: goal.order_num,
+        };
+
+        if (goal.description) {
+          body.description = goal.description;
+        }
+
+        if (goal.deleted_at) {
+          // 已删除的目标，删除云端数据
+          await fetch(`${this.backendUrl}/api/v1/goals/${goal.id}`, {
+            method: 'DELETE',
+          });
+        } else {
+          // 新建或更新目标
+          const method = goal.synced_at ? 'PUT' : 'POST';
+          const url = goal.synced_at
+            ? `${this.backendUrl}/api/v1/goals/${goal.id}`
+            : `${this.backendUrl}/api/v1/goals`;
+
+          await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        }
+
+        await markGoalSynced(goal.id);
+      } catch (error) {
+        console.error('[Sync] Failed to upload goal:', goal.id, error);
+      }
+    }
+  }
+
+  /**
+   * 上传 Tasks 到云端
+   */
+  private async uploadTasks(): Promise<void> {
+    const tasks = await getTasksToSync();
+
+    for (const task of tasks) {
+      try {
+        const body: any = {
+          description: task.description,
+          priority: task.priority,
+          completionPercentage: task.completion_percentage,
+          isRepeat: task.is_repeat === 1,
+          repeatInterval: task.repeat_interval,
+          repeatUnit: task.repeat_unit,
+        };
+
+        if (task.goal_id) {
+          body.goalId = task.goal_id;
+        }
+        if (task.start_date) {
+          body.startDate = task.start_date;
+        }
+        if (task.end_date) {
+          body.endDate = task.end_date;
+        }
+        if (task.actual_completion_date) {
+          body.actualCompletionDate = task.actual_completion_date;
+        }
+        if (task.repeat_end_date) {
+          body.repeatEndDate = task.repeat_end_date;
+        }
+
+        if (task.deleted_at) {
+          await fetch(`${this.backendUrl}/api/v1/tasks/${task.id}`, {
+            method: 'DELETE',
+          });
+        } else {
+          const method = task.synced_at ? 'PUT' : 'POST';
+          const url = task.synced_at
+            ? `${this.backendUrl}/api/v1/tasks/${task.id}`
+            : `${this.backendUrl}/api/v1/tasks`;
+
+          await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        }
+
+        await markTaskSynced(task.id);
+      } catch (error) {
+        console.error('[Sync] Failed to upload task:', task.id, error);
+      }
+    }
+  }
+
+  /**
+   * 上传 Todos 到云端
+   */
+  private async uploadTodos(): Promise<void> {
+    const todos = await getTodosToSync();
+
+    for (const todo of todos) {
+      try {
+        const body: any = {
+          title: todo.title,
+          priority: todo.priority,
+          isRepeat: todo.is_repeat === 1,
+          repeatInterval: todo.repeat_interval,
+          repeatUnit: todo.repeat_unit,
+        };
+
+        if (todo.description) {
+          body.description = todo.description;
+        }
+        if (todo.due_date) {
+          body.dueDate = todo.due_date;
+        }
+        if (todo.completed_at) {
+          body.completedAt = todo.completed_at;
+        }
+        if (todo.status) {
+          body.status = todo.status;
+        }
+        if (todo.repeat_end_date) {
+          body.repeatEndDate = todo.repeat_end_date;
+        }
+
+        if (todo.deleted_at) {
+          await fetch(`${this.backendUrl}/api/v1/todos/${todo.id}`, {
+            method: 'DELETE',
+          });
+        } else {
+          const method = todo.synced_at ? 'PUT' : 'POST';
+          const url = todo.synced_at
+            ? `${this.backendUrl}/api/v1/todos/${todo.id}`
+            : `${this.backendUrl}/api/v1/todos`;
+
+          await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        }
+
+        await markTodoSynced(todo.id);
+      } catch (error) {
+        console.error('[Sync] Failed to upload todo:', todo.id, error);
+      }
+    }
+  }
+
+  /**
+   * 从云端下载数据
+   */
+  private async downloadFromCloud(): Promise<void> {
+    try {
+      // 下载 Goals
+      const goalsResponse = await fetch(`${this.backendUrl}/api/v1/goals`);
+      const goalsResult = await goalsResponse.json();
+      if (goalsResult.success) {
+        await upsertGoalsFromCloud(goalsResult.data);
+      }
+
+      // 下载 Tasks
+      const tasksResponse = await fetch(`${this.backendUrl}/api/v1/tasks`);
+      const tasksResult = await tasksResponse.json();
+      if (tasksResult.success) {
+        await upsertTasksFromCloud(tasksResult.data);
+      }
+
+      // 下载 Todos
+      const todosResponse = await fetch(`${this.backendUrl}/api/v1/todos`);
+      const todosResult = await todosResponse.json();
+      if (todosResult.success) {
+        await upsertTodosFromCloud(todosResult.data);
+      }
+    } catch (error) {
+      console.error('[Sync] Failed to download from cloud:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 执行完整同步
+   */
+  async sync(): Promise<void> {
+    // 检查后端是否可用
+    const isAvailable = await this.isBackendAvailable();
+    if (!isAvailable) {
+      this.updateState({
+        status: 'error',
+        errorMessage: '后端服务不可用，数据已保存到本地',
+      });
+      return;
+    }
+
+    try {
+      this.updateState({ status: 'syncing', errorMessage: null });
+
+      // 1. 先上传本地更改
+      await this.uploadGoals();
+      await this.uploadTasks();
+      await this.uploadTodos();
+
+      // 2. 从云端下载数据
+      await this.downloadFromCloud();
+
+      // 3. 更新同步状态
+      this.updateState({
+        status: 'success',
+        lastSyncTime: new Date().toISOString(),
+        errorMessage: null,
+      });
+    } catch (error) {
+      console.error('[Sync] Sync failed:', error);
+      this.updateState({
+        status: 'error',
+        errorMessage: '同步失败，数据已保存到本地',
+      });
+    }
+  }
+
+  /**
+   * 触发同步（在后台执行）
+   */
+  triggerSync() {
+    this.sync().catch(console.error);
+  }
+
+  /**
+   * 重置同步状态
+   */
+  reset() {
+    this.updateState({
+      status: 'idle',
+      errorMessage: null,
+    });
+  }
+}
+
+// 导出单例
+export const syncManager = new SyncManager();
