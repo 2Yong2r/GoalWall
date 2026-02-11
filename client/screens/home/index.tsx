@@ -126,7 +126,6 @@ export default function HomeScreen() {
             try {
               await localApiService.deleteGoal(id);
               setGoals(prev => prev.filter(g => g.id !== id));
-              Alert.alert('成功', '目标已删除，云端同步中...');
             } catch (error) {
               console.error('Failed to delete goal:', error);
               Alert.alert('错误', '删除目标失败');

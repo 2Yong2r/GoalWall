@@ -22,10 +22,10 @@ export async function createGoal(goal: {
   description?: string | null;
   order?: number;
 }): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `INSERT INTO goals (id, name, description, order_num, created_at, updated_at, synced_at, sync_status)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
@@ -53,7 +53,7 @@ export async function updateGoal(
     deleted_at: string | null;
   }>
 ): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
   const fields: string[] = [];
@@ -82,7 +82,7 @@ export async function updateGoal(
   values.push('pending');
   values.push(id);
 
-  await db.runAsync(
+  await db.run(
     `UPDATE goals SET ${fields.join(', ')} WHERE id = ?`,
     values
   );
@@ -92,10 +92,10 @@ export async function updateGoal(
  * 删除目标（软删除）
  */
 export async function deleteGoal(id: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE goals SET deleted_at = ?, updated_at = ?, sync_status = ? WHERE id = ?`,
     [now, now, 'pending', id]
   );
@@ -105,8 +105,8 @@ export async function deleteGoal(id: string): Promise<void> {
  * 获取单个目标
  */
 export async function getGoal(id: string): Promise<GoalRow | null> {
-  const db = getDatabase();
-  const result = await db.getFirstAsync<GoalRow>(
+  const db = await getDatabase();
+  const result = await db.getFirstAsync(
     'SELECT * FROM goals WHERE id = ? AND remote_deleted = 0',
     [id]
   );
@@ -117,8 +117,8 @@ export async function getGoal(id: string): Promise<GoalRow | null> {
  * 获取所有目标（未删除）
  */
 export async function getAllGoals(): Promise<GoalRow[]> {
-  const db = getDatabase();
-  const result = await db.getAllAsync<GoalRow>(
+  const db = await getDatabase();
+  const result = await db.getAllAsync(
     'SELECT * FROM goals WHERE deleted_at IS NULL AND remote_deleted = 0 ORDER BY order_num ASC'
   );
   return result;
@@ -128,8 +128,8 @@ export async function getAllGoals(): Promise<GoalRow[]> {
  * 获取所有需要同步的目标
  */
 export async function getGoalsToSync(): Promise<GoalRow[]> {
-  const db = getDatabase();
-  const result = await db.getAllAsync<GoalRow>(
+  const db = await getDatabase();
+  const result = await db.getAllAsync(
     'SELECT * FROM goals WHERE sync_status = "pending" AND remote_deleted = 0'
   );
   return result;
@@ -139,10 +139,10 @@ export async function getGoalsToSync(): Promise<GoalRow[]> {
  * 标记目标已同步
  */
 export async function markGoalSynced(id: string, syncedAt?: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = syncedAt || new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE goals SET synced_at = ?, sync_status = ? WHERE id = ?`,
     [now, 'synced', id]
   );
@@ -152,9 +152,9 @@ export async function markGoalSynced(id: string, syncedAt?: string): Promise<voi
  * 标记目标为已删除（来自云端）
  */
 export async function markGoalRemoteDeleted(id: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE goals SET remote_deleted = 1, sync_status = ? WHERE id = ?`,
     ['synced', id]
   );
@@ -164,7 +164,7 @@ export async function markGoalRemoteDeleted(id: string): Promise<void> {
  * 批量插入/更新目标（从云端同步）
  */
 export async function upsertGoalsFromCloud(goals: any[]): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
   for (const goal of goals) {
@@ -173,7 +173,7 @@ export async function upsertGoalsFromCloud(goals: any[]): Promise<void> {
 
     if (existing) {
       // 更新
-      await db.runAsync(
+      await db.run(
         `UPDATE goals SET
           name = ?,
           description = ?,
@@ -196,7 +196,7 @@ export async function upsertGoalsFromCloud(goals: any[]): Promise<void> {
       );
     } else {
       // 插入
-      await db.runAsync(
+      await db.run(
         `INSERT INTO goals (id, name, description, order_num, deleted_at, created_at, updated_at, synced_at, sync_status)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [

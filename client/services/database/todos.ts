@@ -36,10 +36,10 @@ export async function createTodo(todo: {
   repeat_unit?: string | null;
   repeat_end_date?: string | null;
 }): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `INSERT INTO todos (
       id, title, description, due_date, priority, status, completed_at,
       is_repeat, repeat_interval, repeat_unit, repeat_end_date,
@@ -84,7 +84,7 @@ export async function updateTodo(
     deleted_at: string | null;
   }>
 ): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
   const fields: string[] = [];
@@ -141,7 +141,7 @@ export async function updateTodo(
   values.push('pending');
   values.push(id);
 
-  await db.runAsync(
+  await db.run(
     `UPDATE todos SET ${fields.join(', ')} WHERE id = ?`,
     values
   );
@@ -151,10 +151,10 @@ export async function updateTodo(
  * 删除待办（软删除）
  */
 export async function deleteTodo(id: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE todos SET deleted_at = ?, updated_at = ?, sync_status = ? WHERE id = ?`,
     [now, now, 'pending', id]
   );
@@ -164,8 +164,8 @@ export async function deleteTodo(id: string): Promise<void> {
  * 获取单个待办
  */
 export async function getTodo(id: string): Promise<TodoRow | null> {
-  const db = getDatabase();
-  const result = await db.getFirstAsync<TodoRow>(
+  const db = await getDatabase();
+  const result = await db.getFirstAsync(
     'SELECT * FROM todos WHERE id = ? AND remote_deleted = 0',
     [id]
   );
@@ -176,8 +176,8 @@ export async function getTodo(id: string): Promise<TodoRow | null> {
  * 获取所有待办（未删除）
  */
 export async function getAllTodos(): Promise<TodoRow[]> {
-  const db = getDatabase();
-  const result = await db.getAllAsync<TodoRow>(
+  const db = await getDatabase();
+  const result = await db.getAllAsync(
     'SELECT * FROM todos WHERE deleted_at IS NULL AND remote_deleted = 0 ORDER BY created_at DESC'
   );
   return result;
@@ -187,11 +187,11 @@ export async function getAllTodos(): Promise<TodoRow[]> {
  * 获取即将到期的待办
  */
 export async function getUpcomingTodos(days: number = 7): Promise<TodoRow[]> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + days);
 
-  const result = await db.getAllAsync<TodoRow>(
+  const result = await db.getAllAsync(
     `SELECT * FROM todos
      WHERE deleted_at IS NULL
        AND remote_deleted = 0
@@ -207,8 +207,8 @@ export async function getUpcomingTodos(days: number = 7): Promise<TodoRow[]> {
  * 获取所有需要同步的待办
  */
 export async function getTodosToSync(): Promise<TodoRow[]> {
-  const db = getDatabase();
-  const result = await db.getAllAsync<TodoRow>(
+  const db = await getDatabase();
+  const result = await db.getAllAsync(
     'SELECT * FROM todos WHERE sync_status = "pending" AND remote_deleted = 0'
   );
   return result;
@@ -218,10 +218,10 @@ export async function getTodosToSync(): Promise<TodoRow[]> {
  * 标记待办已同步
  */
 export async function markTodoSynced(id: string, syncedAt?: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = syncedAt || new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE todos SET synced_at = ?, sync_status = ? WHERE id = ?`,
     [now, 'synced', id]
   );
@@ -231,9 +231,9 @@ export async function markTodoSynced(id: string, syncedAt?: string): Promise<voi
  * 标记待办为已删除（来自云端）
  */
 export async function markTodoRemoteDeleted(id: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE todos SET remote_deleted = 1, sync_status = ? WHERE id = ?`,
     ['synced', id]
   );
@@ -243,14 +243,14 @@ export async function markTodoRemoteDeleted(id: string): Promise<void> {
  * 批量插入/更新待办（从云端同步）
  */
 export async function upsertTodosFromCloud(todos: any[]): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
   for (const todo of todos) {
     const existing = await getTodo(todo.id);
 
     if (existing) {
-      await db.runAsync(
+      await db.run(
         `UPDATE todos SET
           title = ?,
           description = ?,
@@ -286,7 +286,7 @@ export async function upsertTodosFromCloud(todos: any[]): Promise<void> {
         ]
       );
     } else {
-      await db.runAsync(
+      await db.run(
         `INSERT INTO todos (
           id, title, description, due_date, priority, status, completed_at,
           is_repeat, repeat_interval, repeat_unit, repeat_end_date,

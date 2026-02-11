@@ -2,14 +2,16 @@ import * as SQLite from 'expo-sqlite';
 
 const DB_NAME = 'goalwall.db';
 
-let dbInstance: SQLite.SQLiteDatabase | null = null;
+let dbInstance: any = null;
 
 /**
  * 获取数据库实例（单例模式）
+ * 使用异步方式初始化，避免 Web 环境下 SharedArrayBuffer 问题
  */
-export function getDatabase(): SQLite.SQLiteDatabase {
+export async function getDatabase(): Promise<any> {
   if (!dbInstance) {
-    dbInstance = SQLite.openDatabaseSync(DB_NAME);
+    // 使用异步 API 而不是同步 API，避免 Web 环境问题
+    dbInstance = await SQLite.openDatabaseAsync(DB_NAME);
   }
   return dbInstance;
 }
@@ -18,10 +20,10 @@ export function getDatabase(): SQLite.SQLiteDatabase {
  * 初始化数据库
  */
 export async function initDatabase(): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
 
   // 创建 goals 表
-  await db.execAsync(`
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS goals (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -37,7 +39,7 @@ export async function initDatabase(): Promise<void> {
   `);
 
   // 创建 tasks 表
-  await db.execAsync(`
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY,
       goal_id TEXT,
@@ -61,7 +63,7 @@ export async function initDatabase(): Promise<void> {
   `);
 
   // 创建 task_updates 表
-  await db.execAsync(`
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS task_updates (
       id TEXT PRIMARY KEY,
       task_id TEXT NOT NULL,
@@ -75,7 +77,7 @@ export async function initDatabase(): Promise<void> {
   `);
 
   // 创建 todos 表
-  await db.execAsync(`
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS todos (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
@@ -98,7 +100,7 @@ export async function initDatabase(): Promise<void> {
   `);
 
   // 创建索引
-  await db.execAsync(`
+  await db.exec(`
     CREATE INDEX IF NOT EXISTS idx_goals_order ON goals(order_num);
     CREATE INDEX IF NOT EXISTS idx_goals_deleted_at ON goals(deleted_at);
     CREATE INDEX IF NOT EXISTS idx_tasks_goal_id ON tasks(goal_id);
@@ -116,8 +118,8 @@ export async function initDatabase(): Promise<void> {
  * 重置数据库（用于测试）
  */
 export async function resetDatabase(): Promise<void> {
-  const db = getDatabase();
-  await db.execAsync(`
+  const db = await getDatabase();
+  await db.exec(`
     DROP TABLE IF EXISTS goals;
     DROP TABLE IF EXISTS tasks;
     DROP TABLE IF EXISTS task_updates;

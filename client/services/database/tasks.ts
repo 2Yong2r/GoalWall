@@ -38,10 +38,10 @@ export async function createTask(task: {
   repeat_unit?: string | null;
   repeat_end_date?: string | null;
 }): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `INSERT INTO tasks (
       id, goal_id, description, priority, start_date, end_date,
       completion_percentage, actual_completion_date, is_repeat,
@@ -89,7 +89,7 @@ export async function updateTask(
     deleted_at: string | null;
   }>
 ): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
   const fields: string[] = [];
@@ -150,7 +150,7 @@ export async function updateTask(
   values.push('pending');
   values.push(id);
 
-  await db.runAsync(
+  await db.run(
     `UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`,
     values
   );
@@ -160,10 +160,10 @@ export async function updateTask(
  * 删除任务（软删除）
  */
 export async function deleteTask(id: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE tasks SET deleted_at = ?, updated_at = ?, sync_status = ? WHERE id = ?`,
     [now, now, 'pending', id]
   );
@@ -173,8 +173,8 @@ export async function deleteTask(id: string): Promise<void> {
  * 获取单个任务
  */
 export async function getTask(id: string): Promise<TaskRow | null> {
-  const db = getDatabase();
-  const result = await db.getFirstAsync<TaskRow>(
+  const db = await getDatabase();
+  const result = await db.getFirstAsync(
     'SELECT * FROM tasks WHERE id = ? AND remote_deleted = 0',
     [id]
   );
@@ -185,8 +185,8 @@ export async function getTask(id: string): Promise<TaskRow | null> {
  * 获取所有任务（未删除）
  */
 export async function getAllTasks(): Promise<TaskRow[]> {
-  const db = getDatabase();
-  const result = await db.getAllAsync<TaskRow>(
+  const db = await getDatabase();
+  const result = await db.getAllAsync(
     'SELECT * FROM tasks WHERE deleted_at IS NULL AND remote_deleted = 0'
   );
   return result;
@@ -196,8 +196,8 @@ export async function getAllTasks(): Promise<TaskRow[]> {
  * 根据目标 ID 获取任务
  */
 export async function getTasksByGoalId(goalId: string): Promise<TaskRow[]> {
-  const db = getDatabase();
-  const result = await db.getAllAsync<TaskRow>(
+  const db = await getDatabase();
+  const result = await db.getAllAsync(
     'SELECT * FROM tasks WHERE goal_id = ? AND deleted_at IS NULL AND remote_deleted = 0',
     [goalId]
   );
@@ -208,7 +208,7 @@ export async function getTasksByGoalId(goalId: string): Promise<TaskRow[]> {
  * 获取任务的更新记录
  */
 export async function getTaskUpdates(taskId: string): Promise<any[]> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const result = await db.getAllAsync(
     'SELECT * FROM task_updates WHERE task_id = ? AND remote_deleted = 0 ORDER BY created_at DESC',
     [taskId]
@@ -220,8 +220,8 @@ export async function getTaskUpdates(taskId: string): Promise<any[]> {
  * 获取所有需要同步的任务
  */
 export async function getTasksToSync(): Promise<TaskRow[]> {
-  const db = getDatabase();
-  const result = await db.getAllAsync<TaskRow>(
+  const db = await getDatabase();
+  const result = await db.getAllAsync(
     'SELECT * FROM tasks WHERE sync_status = "pending" AND remote_deleted = 0'
   );
   return result;
@@ -231,10 +231,10 @@ export async function getTasksToSync(): Promise<TaskRow[]> {
  * 标记任务已同步
  */
 export async function markTaskSynced(id: string, syncedAt?: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = syncedAt || new Date().toISOString();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE tasks SET synced_at = ?, sync_status = ? WHERE id = ?`,
     [now, 'synced', id]
   );
@@ -244,9 +244,9 @@ export async function markTaskSynced(id: string, syncedAt?: string): Promise<voi
  * 标记任务为已删除（来自云端）
  */
 export async function markTaskRemoteDeleted(id: string): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
 
-  await db.runAsync(
+  await db.run(
     `UPDATE tasks SET remote_deleted = 1, sync_status = ? WHERE id = ?`,
     ['synced', id]
   );
@@ -256,14 +256,14 @@ export async function markTaskRemoteDeleted(id: string): Promise<void> {
  * 批量插入/更新任务（从云端同步）
  */
 export async function upsertTasksFromCloud(tasks: any[]): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
   const now = new Date().toISOString();
 
   for (const task of tasks) {
     const existing = await getTask(task.id);
 
     if (existing) {
-      await db.runAsync(
+      await db.run(
         `UPDATE tasks SET
           goal_id = ?,
           description = ?,
@@ -301,7 +301,7 @@ export async function upsertTasksFromCloud(tasks: any[]): Promise<void> {
         ]
       );
     } else {
-      await db.runAsync(
+      await db.run(
         `INSERT INTO tasks (
           id, goal_id, description, priority, start_date, end_date,
           completion_percentage, actual_completion_date, is_repeat,
