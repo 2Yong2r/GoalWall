@@ -312,46 +312,59 @@ export default function TodosScreen() {
     const isDayToday = isToday(day, currentMonth);
 
     return (
-      <TouchableOpacity
+      <View
         key={index}
         style={[
           styles.calendarCell,
           isDayToday && styles.todayCell
         ]}
-        onPress={() => {
-          // 可以在这里添加点击日期查看该日所有待办的功能
-          if (dayTodos.length > 0) {
-            console.log('Todos for day:', day, dayTodos);
-          }
-        }}
       >
-        <ThemedText
-          variant="caption"
-          color={isDayToday ? theme.primary : theme.textPrimary}
-          style={styles.dayNumber}
-        >
-          {day}
-        </ThemedText>
-        <View style={styles.dayTodos}>
-          {dayTodos.slice(0, 3).map((todo, idx) => (
-            <View
-              key={idx}
-              style={[
-                styles.todoDot,
-                todo.status === 'completed' && styles.todoDotCompleted,
-                todo.priority === 'high' && styles.todoDotHigh,
-                todo.priority === 'medium' && styles.todoDotMedium,
-                todo.priority === 'low' && styles.todoDotLow,
-              ]}
-            />
-          ))}
-          {dayTodos.length > 3 && (
-            <ThemedText variant="caption" color={theme.textMuted} style={styles.moreTodosText}>
-              +{dayTodos.length - 3}
-            </ThemedText>
-          )}
+        <View style={styles.cellHeader}>
+          <ThemedText
+            variant="caption"
+            color={isDayToday ? theme.primary : theme.textPrimary}
+            style={styles.dayNumber}
+          >
+            {day}
+          </ThemedText>
         </View>
-      </TouchableOpacity>
+        <ScrollView
+          style={styles.cellContent}
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
+        >
+          {dayTodos.length > 0 ? (
+            dayTodos.map((todo) => (
+              <TouchableOpacity
+                key={todo.id}
+                style={[
+                  styles.cellTodoItem,
+                  todo.status === 'completed' && styles.cellTodoItemCompleted
+                ]}
+                onPress={() => router.push('/todo-detail', { todoId: todo.id })}
+              >
+                <View style={[
+                  styles.cellTodoDot,
+                  todo.status === 'completed' && styles.cellTodoDotCompleted,
+                  todo.priority === 'high' && styles.cellTodoDotHigh,
+                  todo.priority === 'medium' && styles.cellTodoDotMedium,
+                  todo.priority === 'low' && styles.cellTodoDotLow,
+                ]} />
+                <ThemedText
+                  variant="caption"
+                  color={todo.status === 'completed' ? theme.textMuted : theme.textPrimary}
+                  style={styles.cellTodoTitle}
+                  numberOfLines={2}
+                >
+                  {todo.title}
+                </ThemedText>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.cellEmpty} />
+          )}
+        </ScrollView>
+      </View>
     );
   };
 

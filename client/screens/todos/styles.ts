@@ -137,71 +137,95 @@ export const createStyles = (theme: Theme) => {
       flex: 1,
     },
     calendarContainer: {
-      padding: Spacing.lg,
+      flex: 1,
+      paddingHorizontal: 8,
+      paddingVertical: 8,
     },
     monthHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: Spacing.md,
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+      minHeight: 36,
     },
     weekHeader: {
       flexDirection: 'row',
-      paddingBottom: Spacing.sm,
+      paddingBottom: 4,
     },
     weekDayCell: {
       flex: 1,
       alignItems: 'center',
-      paddingVertical: Spacing.xs,
+      paddingVertical: 4,
     },
     calendarGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
+      flex: 1,
     },
     calendarCell: {
       width: `${100 / 7}%`,
-      aspectRatio: 1,
       borderWidth: 1,
       borderColor: theme.border,
       backgroundColor: theme.backgroundDefault,
-      padding: Spacing.xs,
-      justifyContent: 'flex-start',
-      minHeight: 60,
+      minHeight: 120,
     },
     todayCell: {
       borderWidth: 2,
       borderColor: theme.primary,
     },
+    cellHeader: {
+      paddingVertical: 4,
+      paddingHorizontal: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      backgroundColor: theme.backgroundTertiary,
+    },
     dayNumber: {
       fontWeight: '600',
-      marginBottom: Spacing.xs,
+      fontSize: 12,
     },
-    dayTodos: {
+    cellContent: {
       flex: 1,
-      flexWrap: 'wrap',
-      flexDirection: 'row',
-      gap: 2,
-      alignItems: 'center',
+      padding: 4,
     },
-    todoDot: {
+    cellTodoItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      padding: 4,
+      marginBottom: 2,
+      backgroundColor: theme.backgroundTertiary,
+      borderRadius: 4,
+    },
+    cellTodoItemCompleted: {
+      opacity: 0.5,
+    },
+    cellTodoDot: {
       width: 6,
       height: 6,
       borderRadius: 3,
+      flexShrink: 0,
     },
-    todoDotCompleted: {
+    cellTodoDotCompleted: {
       opacity: 0.4,
     },
-    todoDotHigh: {
+    cellTodoDotHigh: {
       backgroundColor: '#F97316',
     },
-    todoDotMedium: {
+    cellTodoDotMedium: {
       backgroundColor: '#3B82F6',
     },
-    todoDotLow: {
+    cellTodoDotLow: {
       backgroundColor: '#9CA3AF',
     },
-    moreTodosText: {
+    cellTodoTitle: {
+      flex: 1,
       fontSize: 10,
+      lineHeight: 12,
+    },
+    cellEmpty: {
+      height: '100%',
     },
   });
 };
