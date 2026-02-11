@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, TouchableOpacity, FlatList, Alert, ScrollView } from 'react-native';
+import { View, TouchableOpacity, FlatList, Alert, ScrollView, Modal, TouchableWithoutFeedback } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeRouter } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
@@ -23,6 +23,7 @@ export default function TodosScreen() {
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [viewMenuVisible, setViewMenuVisible] = useState(false);
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
   // 获取待办列表（使用本地 API）
@@ -410,44 +411,7 @@ export default function TodosScreen() {
     );
   };
 
-  // 渲染视图模式切换按钮
-  const renderViewModeButtons = () => (
-    <View style={styles.viewModeContainer}>
-      <TouchableOpacity
-        style={[styles.viewModeButton, viewMode === 'timeline' && styles.viewModeButtonActive]}
-        onPress={() => setViewMode('timeline')}
-      >
-        <ThemedText
-          variant="caption"
-          color={viewMode === 'timeline' ? theme.buttonPrimaryText : theme.textSecondary}
-        >
-          时间轴
-        </ThemedText>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.viewModeButton, viewMode === 'upcoming' && styles.viewModeButtonActive]}
-        onPress={() => setViewMode('upcoming')}
-      >
-        <ThemedText
-          variant="caption"
-          color={viewMode === 'upcoming' ? theme.buttonPrimaryText : theme.textSecondary}
-        >
-          未来7天
-        </ThemedText>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.viewModeButton, viewMode === 'monthly' && styles.viewModeButtonActive]}
-        onPress={() => setViewMode('monthly')}
-      >
-        <ThemedText
-          variant="caption"
-          color={viewMode === 'monthly' ? theme.buttonPrimaryText : theme.textSecondary}
-        >
-          月度
-        </ThemedText>
-      </TouchableOpacity>
-    </View>
-  );
+
 
   return (
     <Screen backgroundColor={theme.backgroundRoot} statusBarStyle="dark">
@@ -455,14 +419,12 @@ export default function TodosScreen() {
         <View style={styles.header}>
           <ThemedText variant="h2" color={theme.textPrimary}>待办事项</ThemedText>
           <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => router.push('/todo-detail', { mode: 'create' })}
+            style={styles.viewMenuButton}
+            onPress={() => setViewMenuVisible(true)}
           >
-            <FontAwesome6 name="plus" size={20} color="white" />
+            <FontAwesome6 name="list" size={20} color={theme.textPrimary} />
           </TouchableOpacity>
         </View>
-
-        {renderViewModeButtons()}
 
         {loading ? (
           <View style={styles.centerContainer}>
@@ -491,7 +453,80 @@ export default function TodosScreen() {
             removeClippedSubviews={false}
           />
         )}
+
+        {/* 浮动新增按钮 */}
+        <TouchableOpacity
+          style={styles.floatingAddButton}
+          onPress={() => router.push('/todo-detail', { mode: 'create' })}
+        >
+          <FontAwesome6 name="plus" size={24} color="white" />
+        </TouchableOpacity>
       </View>
+
+      {/* 视图模式菜单 */}
+      <Modal
+        visible={viewMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewMenuVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setViewMenuVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.viewMenuContainer}>
+                <TouchableOpacity
+                  style={[styles.viewMenuItem, viewMode === 'timeline' && styles.viewMenuItemActive]}
+                  onPress={() => {
+                    setViewMode('timeline');
+                    setViewMenuVisible(false);
+                  }}
+                >
+                  <FontAwesome6 name="timeline" size={18} color={viewMode === 'timeline' ? theme.buttonPrimaryText : theme.textPrimary} />
+                  <ThemedText
+                    variant="body"
+                    color={viewMode === 'timeline' ? theme.buttonPrimaryText : theme.textPrimary}
+                    style={styles.viewMenuText}
+                  >
+                    时间轴
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.viewMenuItem, viewMode === 'upcoming' && styles.viewMenuItemActive]}
+                  onPress={() => {
+                    setViewMode('upcoming');
+                    setViewMenuVisible(false);
+                  }}
+                >
+                  <FontAwesome6 name="calendar-days" size={18} color={viewMode === 'upcoming' ? theme.buttonPrimaryText : theme.textPrimary} />
+                  <ThemedText
+                    variant="body"
+                    color={viewMode === 'upcoming' ? theme.buttonPrimaryText : theme.textPrimary}
+                    style={styles.viewMenuText}
+                  >
+                    未来7天
+                  </ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.viewMenuItem, viewMode === 'monthly' && styles.viewMenuItemActive]}
+                  onPress={() => {
+                    setViewMode('monthly');
+                    setViewMenuVisible(false);
+                  }}
+                >
+                  <FontAwesome6 name="calendar" size={18} color={viewMode === 'monthly' ? theme.buttonPrimaryText : theme.textPrimary} />
+                  <ThemedText
+                    variant="body"
+                    color={viewMode === 'monthly' ? theme.buttonPrimaryText : theme.textPrimary}
+                    style={styles.viewMenuText}
+                  >
+                    月度
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </Screen>
   );
 }
