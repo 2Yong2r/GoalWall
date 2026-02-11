@@ -72,14 +72,18 @@ class WebDatabase {
     // 解析 WHERE 子句中的条件
     const conditions: any[] = [];
 
-    // 匹配所有 "column = ?" 或 "column = 'value'" 或 "column = "value"" 的模式
-    const equalsMatches = [...whereClause.matchAll(/(\w+)\s*=\s*(?:"([^"]+)"|'([^']+)'|\?)/g)];
+    // 匹配所有 "column = ?" 或 "column = 'value'" 或 "column = "value"" 或 "column = 数字" 的模式
+    const equalsMatches = [...whereClause.matchAll(/(\w+)\s*=\s*(?:"([^"]+)"|'([^']+)'|\d+|\?)/g)];
     for (const match of equalsMatches) {
       const column = match[1];
-      const literalValue = match[2] || match[3]; // 字面量值
+      const literalValue = match[2] || match[3]; // 字符串字面量值
+      const digitValue = match[4]; // 数字字面量值
       if (literalValue !== undefined) {
-        // 字面量值（如 "pending"）
+        // 字符串字面量值（如 "pending"）
         conditions.push({ column, operator: '=', value: literalValue });
+      } else if (digitValue !== undefined) {
+        // 数字字面量值（如 0, 1）
+        conditions.push({ column, operator: '=', value: parseInt(digitValue, 10) });
       } else {
         // 参数占位符
         conditions.push({ column, operator: '=', paramIndex: conditions.filter(c => c.paramIndex !== undefined).length });
