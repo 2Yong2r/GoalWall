@@ -1,0 +1,78 @@
+{
+  "version": "0.5.0",
+  "releaseDate": "2026-02-11T13:00:00Z",
+  "releaseType": "minor",
+  "description": "重构目标详情页面，将创建目标和编辑目标合并为统一的表单页面，删除编辑Modal，采用创建模式的交互风格",
+  "buildInfo": {
+    "platform": "web",
+    "buildTool": "expo-export",
+    "expoVersion": "54.0.33",
+    "reactNativeVersion": "0.81.5",
+    "buildDate": "2026-02-11T13:05:00Z",
+    "buildHash": "aaf3f33952aed3ce72312c94c9c708a9"
+  },
+  "features": {
+    "core": [
+      "目标管理（创建、编辑、删除、查看）",
+      "任务管理（创建、编辑、删除、进度跟踪）",
+      "待办事项管理（时间轴、未来7天、月度视图）",
+      "皮肤配色系统（5款主题）"
+    ],
+    "improvements": [
+      "统一创建和编辑目标的交互体验",
+      "移除编辑Modal，直接切换模式",
+      "添加KeyboardAvoidingView优化键盘交互",
+      "页面标题动态变化"
+    ]
+  },
+  "dependencies": {
+    "frontend": {
+      "expo": "54.0.33",
+      "react": "19.1.0",
+      "react-native": "0.81.5",
+      "expo-router": "~6.0.23",
+      "react-native-draggable-flatlist": "^4.0.3",
+      "react-native-gesture-handler": "~2.28.0",
+      "@react-native-async-storage/async-storage": "2.2.0"
+    },
+    "backend": {
+      "express": "^4.18.2",
+      "drizzle-orm": "^0.28.5",
+      "postgres": "^3.3.5"
+    }
+  },
+  "fileStats": {
+    "totalFiles": 61,
+    "clientFiles": 45,
+    "serverFiles": 16,
+    "linesOfCode": "~8000"
+  },
+  "packageSize": {
+    "web": {
+      "bundleSize": "2.66 MB",
+      "gzipSize": "~800 KB",
+      "totalFiles": 3
+    }
+  },
+  "checksum": {
+    "sha256": "57014eef1b5bf263064336b96323d2506e416eb25e2509732a7df4845dc7bcb8"
+  },
+  "notes": [
+    "Web 版本已导出，可直接部署",
+    "移动端版本需要使用 EAS Build 构建",
+    "数据库无需迁移",
+    "向后兼容所有 0.x.x 版本"
+  ],
+  "changelog": [
+    "版本 0.5.0 - 重构目标详情页面",
+    "版本 0.4.6 - 修改页面标题",
+    "版本 0.4.3 - 调整设置页面布局",
+    "版本 0.4.2 - 优化皮肤选择界面",
+    "版本 0.4.1 - 修复皮肤配色切换问题",
+    "版本 0.4.0 - 新增皮肤配色系统",
+    "版本 0.3.0 - 调整版本管理规则",
+    "版本 0.2.0 - 新增版本管理功能",
+    "版本 0.1.0 - 修改任务权重为优先级",
+    "版本 0.0.0 - 初始版本"
+  ]
+}
