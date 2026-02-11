@@ -76,11 +76,24 @@ class WebDatabase {
     const equalsMatches = [...whereClause.matchAll(/(\w+)\s*=\s*(?:"([^"]+)"|'([^']+)'|\d+|\?)/g)];
     for (const match of equalsMatches) {
       const column = match[1];
-      const literalValue = match[2] || match[3]; // 字符串字面量值
+      const doubleQuoteValue = match[2]; // 双引号字符串
+      const singleQuoteValue = match[3]; // 单引号字符串
       const digitValue = match[4]; // 数字字面量值
-      if (literalValue !== undefined) {
+
+      console.log('[WebDatabase] equalsMatches match:', {
+        column,
+        match,
+        doubleQuoteValue,
+        singleQuoteValue,
+        digitValue
+      });
+
+      if (doubleQuoteValue !== undefined) {
         // 字符串字面量值（如 "pending"）
-        conditions.push({ column, operator: '=', value: literalValue });
+        conditions.push({ column, operator: '=', value: doubleQuoteValue });
+      } else if (singleQuoteValue !== undefined) {
+        // 字符串字面量值（如 'pending'）
+        conditions.push({ column, operator: '=', value: singleQuoteValue });
       } else if (digitValue !== undefined) {
         // 数字字面量值（如 0, 1）
         conditions.push({ column, operator: '=', value: parseInt(digitValue, 10) });
