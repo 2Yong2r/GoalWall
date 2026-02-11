@@ -15,9 +15,13 @@ export function useAppInitialization() {
       // 设置同步管理器的后端 URL
       let backendUrl = process.env.EXPO_PUBLIC_BACKEND_BASE_URL;
 
-      // 降级方案：如果环境变量为空，使用默认值
-      if (!backendUrl) {
-        console.warn('[App] EXPO_PUBLIC_BACKEND_BASE_URL not found, using default');
+      // 降级方案：如果环境变量为空或指向 Coze 开发环境，使用本地地址
+      if (!backendUrl || backendUrl.includes('dev.coze.site')) {
+        if (backendUrl && backendUrl.includes('dev.coze.site')) {
+          console.warn('[App] Detected Coze dev environment URL, using local backend');
+        } else {
+          console.warn('[App] EXPO_PUBLIC_BACKEND_BASE_URL not found, using default');
+        }
         backendUrl = 'http://127.0.0.1:9091';
       }
 
