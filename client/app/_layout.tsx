@@ -26,7 +26,7 @@ export default function RootLayout() {
             // 隐藏自带的头部
             headerShown: false
           }}>
-            <Stack.Screen name="index" options={{ title: "" }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="goal-detail" options={{ title: "" }} />
             <Stack.Screen name="task-detail" options={{ title: "" }} />
           </Stack>
