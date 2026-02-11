@@ -1,12 +1,19 @@
 {
-  "version": "0.3.0",
-  "lastUpdated": "2026-02-11T10:45:00Z",
-  "totalFiles": 52,
+  "version": "0.4.0",
+  "lastUpdated": "2026-02-11T12:00:00Z",
+  "totalFiles": 60,
   "thresholds": {
     "minorVersionFiles": 5,
     "majorVersionFiles": 20
   },
   "history": [
+    {
+      "version": "0.4.0",
+      "releaseDate": "2026-02-11T12:00:00Z",
+      "description": "将深色模式改为皮肤配色系统，新增5款系统级皮肤配色方案（极简蓝、活力橙、森林绿、樱花粉、深空紫），支持皮肤切换和持久化",
+      "filesModified": 8,
+      "changeType": "minor"
+    },
     {
       "version": "0.3.0",
       "releaseDate": "2026-02-11T10:45:00Z",
