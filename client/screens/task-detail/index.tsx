@@ -176,19 +176,16 @@ export default function TaskDetailScreen() {
 
   const renderUpdateItem = ({ item }: { item: TaskUpdate }) => (
     <View style={styles.updateItem}>
-      <View style={styles.updateHeader}>
+      <View style={styles.updateLeft}>
         <ThemedText variant="caption" color={theme.textMuted}>
-          {new Date(item.createdAt).toLocaleString()}
+          {new Date(item.createdAt).toLocaleDateString()}
         </ThemedText>
-        <View style={styles.progressBadge}>
-          <ThemedText variant="caption" color={theme.buttonPrimaryText}>
-            {item.completionPercentage}%
-          </ThemedText>
-        </View>
       </View>
-      <ThemedText variant="body" color={theme.textSecondary}>
-        {item.updateContent}
-      </ThemedText>
+      <View style={styles.updateRight}>
+        <ThemedText variant="caption" color={theme.textSecondary} numberOfLines={2}>
+          {item.updateContent}
+        </ThemedText>
+      </View>
     </View>
   );
 

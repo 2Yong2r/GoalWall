@@ -85,29 +85,27 @@ export const createStyles = (theme: Theme) => {
     updatesCard: {
       backgroundColor: theme.backgroundDefault,
       borderRadius: BorderRadius.lg,
-      padding: Spacing.lg,
+      padding: Spacing.md,
       marginBottom: Spacing.lg,
     },
     sectionTitle: {
-      marginBottom: Spacing.md,
-    },
-    updateItem: {
-      backgroundColor: theme.backgroundRoot,
-      borderRadius: BorderRadius.md,
-      padding: Spacing.md,
       marginBottom: Spacing.sm,
     },
-    updateHeader: {
+    updateItem: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
+      backgroundColor: theme.backgroundRoot,
+      borderRadius: BorderRadius.sm,
+      padding: Spacing.xs,
       marginBottom: Spacing.xs,
     },
-    progressBadge: {
-      backgroundColor: theme.primary,
-      paddingHorizontal: Spacing.xs,
-      paddingVertical: 2,
-      borderRadius: BorderRadius.xs,
+    updateLeft: {
+      width: 70,
+      flexShrink: 0,
+      marginRight: Spacing.sm,
+    },
+    updateRight: {
+      flex: 1,
     },
     saveButton: {
       backgroundColor: theme.primary,

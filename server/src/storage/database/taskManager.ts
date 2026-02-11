@@ -51,14 +51,40 @@ export class TaskManager {
       .where(eq(tasks.id, id))
       .returning();
 
-    // 如果完成百分比发生变化，且新的百分比大于0，则创建更新记录
-    if (validated.completionPercentage !== undefined &&
-        validated.completionPercentage !== existingTask.completionPercentage &&
-        validated.completionPercentage > 0) {
+    // 记录所有字段的变化
+    const changes: string[] = [];
+    let completionPercentage: number | undefined = undefined;
+
+    // 检查每个字段的变化
+    if (validated.goalId !== undefined && validated.goalId !== existingTask.goalId) {
+      changes.push('所属目标');
+    }
+    if (validated.description !== undefined && validated.description !== existingTask.description) {
+      changes.push('描述');
+    }
+    if (validated.weight !== undefined && validated.weight !== existingTask.weight) {
+      changes.push(`权重 (${existingTask.weight} → ${validated.weight})`);
+    }
+    if (validated.startDate !== undefined && validated.startDate !== existingTask.startDate) {
+      changes.push('开始日期');
+    }
+    if (validated.endDate !== undefined && validated.endDate !== existingTask.endDate) {
+      changes.push('结束日期');
+    }
+    if (validated.completionPercentage !== undefined && validated.completionPercentage !== existingTask.completionPercentage) {
+      changes.push(`进度 (${existingTask.completionPercentage}% → ${validated.completionPercentage}%)`);
+      completionPercentage = validated.completionPercentage;
+    }
+    if (validated.actualCompletionDate !== undefined && validated.actualCompletionDate !== existingTask.actualCompletionDate) {
+      changes.push('实际完成日期');
+    }
+
+    // 如果有变化，创建更新记录
+    if (changes.length > 0) {
       await this.addTaskUpdate({
         taskId: id,
-        updateContent: `进度更新至 ${validated.completionPercentage}%`,
-        completionPercentage: validated.completionPercentage,
+        updateContent: changes.join(', '),
+        completionPercentage: completionPercentage ?? existingTask.completionPercentage,
       });
     }
 
