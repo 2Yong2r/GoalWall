@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { View, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, Pressable, Alert } from 'react-native';
 import { useSafeRouter, useSafeSearchParams } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
 import { ThemedText } from '@/components/ThemedText';
@@ -10,6 +10,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { RepeatConfigInput, type RepeatConfig } from '@/components/RepeatConfigInput';
 import { createStyles } from './styles';
 import type { Todo } from '@/types';
+import { localApiService } from '@/services/api';
 
 export default function TodoDetailScreen() {
   const { theme } = useTheme();
@@ -32,98 +33,105 @@ export default function TodoDetailScreen() {
     repeatEndDate: null,
   });
 
-  // 获取待办详情
+  // 获取待办详情（使用本地 API）
   const fetchTodoDetail = useCallback(async () => {
     if (!params.todoId || isCreateMode) return;
 
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos/${params.todoId}`);
-      const result = await response.json();
-      if (result.success) {
-        const todo = result.data as Todo;
-        setTitle(todo.title);
-        setDescription(todo.description || '');
-        setPriority((todo.priority as 'high' | 'medium' | 'low') || 'medium');
-        setDueDate(todo.dueDate ? new Date(todo.dueDate) : null);
-        // 加载重复配置
-        setRepeatConfig({
-          isRepeat: todo.isRepeat || false,
-          repeatInterval: todo.repeatInterval || 1,
-          repeatUnit: todo.repeatUnit || 'day',
-          repeatEndDate: todo.repeatEndDate ? new Date(todo.repeatEndDate) : null,
-        });
+      const todoData = await localApiService.getTodo(params.todoId);
+      if (!todoData) {
+        throw new Error('Todo not found');
       }
+      setTitle(todoData.title);
+      setDescription(todoData.description || '');
+      setPriority((todoData.priority as 'high' | 'medium' | 'low') || 'medium');
+      setDueDate(todoData.dueDate ? new Date(todoData.dueDate) : null);
+      // 加载重复配置
+      setRepeatConfig({
+        isRepeat: todoData.isRepeat || false,
+        repeatInterval: todoData.repeatInterval || 1,
+        repeatUnit: todoData.repeatUnit || 'day',
+        repeatEndDate: todoData.repeatEndDate ? new Date(todoData.repeatEndDate) : null,
+      });
     } catch (error) {
       console.error('Failed to fetch todo:', error);
+      Alert.alert('错误', '获取待办详情失败');
     }
   }, [params.todoId, isCreateMode]);
 
-  fetchTodoDetail();
+  // 页面加载时获取数据
+  useEffect(() => {
+    fetchTodoDetail();
+  }, [fetchTodoDetail]);
 
-  // 保存待办
+  // 保存待办（使用本地 API）
   const handleSave = async () => {
     if (!title.trim()) {
-      alert('请输入待办标题');
+      Alert.alert('提示', '请输入待办标题');
       return;
     }
 
     try {
-      const url = isCreateMode
-        ? `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos`
-        : `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos/${params.todoId}`;
-      const method = isCreateMode ? 'POST' : 'PUT';
-
-      const body: any = {
+      const todoData: any = {
         title: title.trim(),
         description: description.trim() || null,
         priority: priority,
+        isRepeat: repeatConfig.isRepeat,
+        repeatInterval: repeatConfig.repeatInterval,
+        repeatUnit: repeatConfig.repeatUnit,
+        repeatEndDate: repeatConfig.repeatEndDate ? repeatConfig.repeatEndDate.toISOString() : null,
       };
 
       if (dueDate) {
-        body.dueDate = dueDate.toISOString();
+        todoData.dueDate = dueDate.toISOString();
       }
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...body,
-          isRepeat: repeatConfig.isRepeat,
-          repeatInterval: repeatConfig.repeatInterval,
-          repeatUnit: repeatConfig.repeatUnit,
-          repeatEndDate: repeatConfig.repeatEndDate ? repeatConfig.repeatEndDate.toISOString() : null,
-        }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        router.back();
+      if (isCreateMode) {
+        await localApiService.createTodo(todoData);
+        Alert.alert('成功', '待办已创建，云端同步中...');
+      } else {
+        await localApiService.updateTodo(params.todoId!, todoData);
+        Alert.alert('成功', '待办已更新，云端同步中...');
       }
+
+      router.back();
     } catch (error) {
       console.error('Failed to save todo:', error);
+      Alert.alert('错误', '保存待办失败');
     }
   };
 
-  // 删除待办
+  // 删除待办（使用本地 API）
   const handleDelete = async () => {
     if (!params.todoId || isCreateMode) {
       router.back();
       return;
     }
 
-    if (!confirm('确定要删除这个待办吗？')) return;
-
-    try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos/${params.todoId}`, {
-        method: 'DELETE',
-      });
-      const result = await response.json();
-      if (result.success) {
-        router.back();
-      }
-    } catch (error) {
-      console.error('Failed to delete todo:', error);
-    }
+    Alert.alert(
+      '确认删除',
+      '确定要删除这个待办吗？此操作无法撤销。',
+      [
+        {
+          text: '取消',
+          style: 'cancel',
+        },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await localApiService.deleteTodo(params.todoId!);
+              Alert.alert('成功', '待办已删除，云端同步中...');
+              router.back();
+            } catch (error) {
+              console.error('Failed to delete todo:', error);
+              Alert.alert('错误', '删除待办失败');
+            }
+          },
+        },
+      ]
+    );
   };
 
   // 日期选择器处理
