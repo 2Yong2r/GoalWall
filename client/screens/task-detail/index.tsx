@@ -123,8 +123,8 @@ export default function TaskDetailScreen() {
       }
 
       if (isCreateMode) {
-        const newTask = await localApiService.createTask(taskData);
-        router.replace('/task-detail', { taskId: newTask.id });
+        await localApiService.createTask(taskData);
+        router.back();
       } else {
         const updatedTask = await localApiService.updateTask(params.taskId!, taskData);
         setTask(updatedTask);
