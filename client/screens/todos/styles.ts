@@ -169,6 +169,7 @@ export const createStyles = (theme: Theme) => {
       borderColor: theme.border,
       backgroundColor: theme.backgroundDefault,
       minHeight: 120,
+      boxSizing: 'border-box',
     },
     todayCell: {
       borderWidth: 2,
