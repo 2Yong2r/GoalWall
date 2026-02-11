@@ -70,6 +70,10 @@ export default function TodoDetailScreen() {
       Alert.alert('提示', '请输入待办标题');
       return;
     }
+    if (!priority) {
+      Alert.alert('提示', '请选择优先级');
+      return;
+    }
 
     try {
       const todoData: any = {
@@ -142,24 +146,24 @@ export default function TodoDetailScreen() {
     }
   };
 
-  // 优先级选择
-  const renderPriorityOption = (value: 'high' | 'medium' | 'low', label: string, color: string) => (
+  // 优先级选择（小旗子图标）
+  const renderPriorityFlag = (value: 'high' | 'medium' | 'low', color: string) => (
     <TouchableOpacity
       key={value}
       style={[
-        styles.priorityOption,
-        priority === value && styles.priorityOptionSelected,
-        { borderColor: color },
-        priority === value && { backgroundColor: color },
+        styles.priorityFlag,
+        priority === value && styles.priorityFlagSelected,
+        { backgroundColor: priority === value ? color : color + '30' },
       ]}
       onPress={() => setPriority(value)}
+      activeOpacity={0.7}
     >
-      <ThemedText
-        variant="smallMedium"
-        color={priority === value ? '#FFFFFF' : theme.textPrimary}
-      >
-        {label}
-      </ThemedText>
+      <FontAwesome6 name="flag" size={18} color={priority === value ? 'white' : color} />
+      {priority === value && (
+        <View style={styles.priorityFlagCheck}>
+          <FontAwesome6 name="check" size={10} color="white" />
+        </View>
+      )}
     </TouchableOpacity>
   );
 
@@ -188,12 +192,9 @@ export default function TodoDetailScreen() {
         >
           {/* 标题输入 */}
           <View style={styles.inputGroup}>
-            <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-              标题 <ThemedText variant="caption" color={theme.textMuted}>*</ThemedText>
-            </ThemedText>
             <TextInput
               style={[styles.input, { borderColor: theme.border }]}
-              placeholder="请输入待办标题"
+              placeholder="标题"
               placeholderTextColor={theme.textMuted}
               value={title}
               onChangeText={setTitle}
@@ -203,47 +204,42 @@ export default function TodoDetailScreen() {
 
           {/* 描述输入 */}
           <View style={styles.inputGroup}>
-            <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-              描述
-            </ThemedText>
             <TextInput
               style={[styles.textArea, { borderColor: theme.border }]}
-              placeholder="请输入待办描述（可选）"
+              placeholder="描述（可选）"
               placeholderTextColor={theme.textMuted}
               value={description}
               onChangeText={setDescription}
               multiline
-              numberOfLines={4}
+              numberOfLines={2}
             />
           </View>
 
-          {/* 优先级选择 */}
+          {/* 优先级选择 - 小旗子图标 */}
           <View style={styles.inputGroup}>
-            <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-              优先级
+            <ThemedText variant="caption" color={theme.textSecondary} style={styles.compactLabel}>
+              优先级 *
             </ThemedText>
-            <View style={styles.priorityContainer}>
-              {renderPriorityOption('high', '高优先级', '#F97316')}
-              {renderPriorityOption('medium', '中优先级', '#3B82F6')}
-              {renderPriorityOption('low', '低优先级', '#9CA3AF')}
+            <View style={styles.priorityFlagsContainer}>
+              {renderPriorityFlag('high', '#F97316')}
+              {renderPriorityFlag('medium', '#3B82F6')}
+              {renderPriorityFlag('low', '#9CA3AF')}
             </View>
           </View>
 
           {/* 截止日期 */}
           <View style={styles.inputGroup}>
-            <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-              截止日期
-            </ThemedText>
             <TouchableOpacity
-              style={[styles.dateButton, { borderColor: theme.border }]}
+              style={[styles.compactButton, { borderColor: theme.border }]}
               onPress={() => setShowDatePicker(true)}
             >
-              <FontAwesome6 name="calendar" size={16} color={theme.textMuted} />
+              <FontAwesome6 name="calendar" size={14} color={theme.textMuted} />
               <ThemedText
                 variant="body"
                 color={dueDate ? theme.textPrimary : theme.textMuted}
+                style={styles.compactButtonText}
               >
-                {dueDate ? dueDate.toLocaleDateString() : '选择截止日期'}
+                {dueDate ? dueDate.toLocaleDateString() : '截止日期'}
               </ThemedText>
             </TouchableOpacity>
           </View>
@@ -261,6 +257,7 @@ export default function TodoDetailScreen() {
           <RepeatConfigInput
             value={repeatConfig}
             onChange={setRepeatConfig}
+            compact
           />
 
           {/* 按钮组 */}
@@ -280,7 +277,7 @@ export default function TodoDetailScreen() {
               onPress={handleSave}
             >
               <ThemedText variant="body" color={theme.buttonPrimaryText}>
-                {isCreateMode ? '创建待办' : '保存'}
+                {isCreateMode ? '创建' : '保存'}
               </ThemedText>
             </TouchableOpacity>
           </View>

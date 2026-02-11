@@ -1,12 +1,18 @@
 import { StyleSheet } from 'react-native';
 import { Spacing, BorderRadius, Theme } from '@/constants/theme';
 
-export const createStyles = (theme: Theme) => {
+export const createStyles = (theme: Theme, compact: boolean = false) => {
+  const padding = compact ? Spacing.sm : Spacing.lg;
+  const gap = compact ? Spacing.sm : Spacing.lg;
+  const switchWidth = compact ? 40 : 48;
+  const switchHeight = compact ? 24 : 28;
+  const switchHandleSize = compact ? 20 : 24;
+
   return StyleSheet.create({
     container: {
-      padding: Spacing.lg,
+      padding: padding,
       borderRadius: BorderRadius.lg,
-      gap: Spacing.lg,
+      gap: gap,
     },
     header: {
       flexDirection: 'row',
@@ -14,12 +20,12 @@ export const createStyles = (theme: Theme) => {
       alignItems: 'center',
     },
     switchContainer: {
-      padding: Spacing.sm,
+      padding: Spacing.xs,
     },
     switch: {
-      width: 48,
-      height: 28,
-      borderRadius: 14,
+      width: switchWidth,
+      height: switchHeight,
+      borderRadius: switchHeight / 2,
       backgroundColor: theme.backgroundTertiary,
       position: 'relative',
     },
@@ -27,9 +33,9 @@ export const createStyles = (theme: Theme) => {
       backgroundColor: theme.primary,
     },
     switchHandle: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
+      width: switchHandleSize,
+      height: switchHandleSize,
+      borderRadius: switchHandleSize / 2,
       backgroundColor: theme.backgroundDefault,
       position: 'absolute',
       top: 2,
@@ -41,16 +47,16 @@ export const createStyles = (theme: Theme) => {
       elevation: 2,
     },
     switchHandleActive: {
-      left: 22,
+      left: switchWidth - switchHandleSize - 2,
     },
     content: {
-      gap: Spacing.lg,
+      gap: gap,
     },
     repeatRow: {
-      gap: Spacing.md,
+      gap: compact ? Spacing.xs : Spacing.md,
     },
     rowLabel: {
-      fontSize: 14,
+      fontSize: compact ? 12 : 14,
     },
     numberContainer: {
       flexDirection: 'row',
@@ -58,30 +64,30 @@ export const createStyles = (theme: Theme) => {
       justifyContent: 'space-between',
       backgroundColor: theme.backgroundTertiary,
       borderRadius: BorderRadius.md,
-      padding: Spacing.sm,
+      padding: compact ? Spacing.xs : Spacing.sm,
     },
     numberButton: {
-      width: 36,
-      height: 36,
+      width: compact ? 32 : 36,
+      height: compact ? 32 : 36,
       borderRadius: BorderRadius.sm,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: theme.backgroundDefault,
     },
     numberText: {
-      fontSize: 24,
+      fontSize: compact ? 20 : 24,
       fontWeight: '600',
-      minWidth: 40,
+      minWidth: 30,
       textAlign: 'center',
     },
     unitContainer: {
       flexDirection: 'row',
-      gap: Spacing.sm,
+      gap: Spacing.xs,
     },
     unitButton: {
       flex: 1,
-      paddingVertical: Spacing.sm,
-      paddingHorizontal: Spacing.md,
+      paddingVertical: compact ? Spacing.xs : Spacing.sm,
+      paddingHorizontal: compact ? Spacing.sm : Spacing.md,
       borderRadius: BorderRadius.md,
       backgroundColor: theme.backgroundTertiary,
       alignItems: 'center',
@@ -90,18 +96,18 @@ export const createStyles = (theme: Theme) => {
       backgroundColor: theme.primary,
     },
     endDateRow: {
-      gap: Spacing.md,
+      gap: compact ? Spacing.xs : Spacing.md,
     },
     endDateButton: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: Spacing.sm,
-      padding: Spacing.md,
+      padding: compact ? Spacing.sm : Spacing.md,
       backgroundColor: theme.backgroundTertiary,
       borderRadius: BorderRadius.md,
     },
     endDateLabel: {
-      fontSize: 14,
+      fontSize: compact ? 12 : 14,
     },
   });
 };

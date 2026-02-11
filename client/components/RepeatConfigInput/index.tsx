@@ -18,6 +18,7 @@ interface RepeatConfigInputProps {
   value: RepeatConfig;
   onChange: (config: RepeatConfig) => void;
   label?: string;
+  compact?: boolean; // 是否紧凑模式
 }
 
 const REPEAT_UNITS = [
@@ -27,9 +28,9 @@ const REPEAT_UNITS = [
   { value: 'year', label: '年' },
 ] as const;
 
-export function RepeatConfigInput({ value, onChange, label = '重复设置' }: RepeatConfigInputProps) {
+export function RepeatConfigInput({ value, onChange, label = '重复设置', compact = false }: RepeatConfigInputProps) {
   const { theme } = useTheme();
-  const styles = createStyles(theme);
+  const styles = createStyles(theme, compact);
 
   const toggleRepeat = () => {
     onChange({
