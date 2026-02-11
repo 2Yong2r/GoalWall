@@ -196,53 +196,51 @@ export default function TodoDetailScreen() {
               onChangeText={setTitle}
               autoFocus={isCreateMode}
             />
-            {/* 优先级选择菜单 */}
-            <View style={styles.priorityMenu}>
-              {/* 优先级选项 */}
-              {showPriorityPicker && (
-                <>
-                  <TouchableOpacity
-                    style={styles.priorityMenuOption}
-                    onPress={() => {
-                      setPriority('high');
-                      setShowPriorityPicker(false);
-                    }}
-                  >
-                    <FontAwesome6 name="flag" size={20} color="#F97316" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.priorityMenuOption}
-                    onPress={() => {
-                      setPriority('medium');
-                      setShowPriorityPicker(false);
-                    }}
-                  >
-                    <FontAwesome6 name="flag" size={20} color="#3B82F6" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.priorityMenuOption}
-                    onPress={() => {
-                      setPriority('low');
-                      setShowPriorityPicker(false);
-                    }}
-                  >
-                    <FontAwesome6 name="flag" size={20} color="#9CA3AF" />
-                  </TouchableOpacity>
-                </>
-              )}
-              {/* 优先级触发按钮 */}
-              <TouchableOpacity
-                style={styles.priorityTrigger}
-                onPress={() => setShowPriorityPicker(!showPriorityPicker)}
-                activeOpacity={0.7}
-              >
-                <FontAwesome6
-                  name="flag"
-                  size={20}
-                  color={getPriorityColor(priority)}
-                />
-              </TouchableOpacity>
-            </View>
+            {/* 优先级触发按钮 */}
+            <TouchableOpacity
+              style={styles.priorityTrigger}
+              onPress={() => setShowPriorityPicker(!showPriorityPicker)}
+              activeOpacity={0.7}
+            >
+              <FontAwesome6
+                name="flag"
+                size={20}
+                color={getPriorityColor(priority)}
+              />
+            </TouchableOpacity>
+
+            {/* 优先级菜单（绝对定位，覆盖在输入框上方） */}
+            {showPriorityPicker && (
+              <View style={styles.priorityMenu}>
+                <TouchableOpacity
+                  style={styles.priorityMenuOption}
+                  onPress={() => {
+                    setPriority('high');
+                    setShowPriorityPicker(false);
+                  }}
+                >
+                  <FontAwesome6 name="flag" size={20} color="#F97316" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.priorityMenuOption}
+                  onPress={() => {
+                    setPriority('medium');
+                    setShowPriorityPicker(false);
+                  }}
+                >
+                  <FontAwesome6 name="flag" size={20} color="#3B82F6" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.priorityMenuOption}
+                  onPress={() => {
+                    setPriority('low');
+                    setShowPriorityPicker(false);
+                  }}
+                >
+                  <FontAwesome6 name="flag" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           {/* 备注输入 */}

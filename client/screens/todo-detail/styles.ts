@@ -34,6 +34,7 @@ export const createStyles = (theme: Theme) => {
       alignItems: 'center',
       gap: Spacing.md,
       marginBottom: Spacing.md,
+      position: 'relative',
     },
     label: {
       marginBottom: Spacing.sm,
@@ -63,19 +64,32 @@ export const createStyles = (theme: Theme) => {
     compactLabel: {
       marginBottom: Spacing.xs,
     },
-    // 优先级菜单
-    priorityMenu: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    priorityMenuOption: {
+    // 优先级触发按钮（单个灰色旗子）
+    priorityTrigger: {
       width: 40,
       height: 40,
       justifyContent: 'center',
       alignItems: 'center',
     },
-    // 优先级触发按钮（单个灰色旗子）
-    priorityTrigger: {
+    // 优先级菜单（绝对定位）
+    priorityMenu: {
+      position: 'absolute',
+      right: 0,
+      top: -8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.backgroundDefault,
+      borderRadius: BorderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.border,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+      zIndex: 10,
+    },
+    priorityMenuOption: {
       width: 40,
       height: 40,
       justifyContent: 'center',
