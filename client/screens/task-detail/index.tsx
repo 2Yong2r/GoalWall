@@ -300,8 +300,9 @@ export default function TaskDetailScreen() {
                     {startDate ? startDate.toLocaleDateString() : '选择开始日期'}
                   </ThemedText>
                 </TouchableOpacity>
-                {showStartDatePicker && (
-                  Platform.OS === 'ios' ? (
+                {Platform.OS === 'ios' ? (
+                  // iOS：使用 Modal 包装
+                  showStartDatePicker && (
                     <Modal
                       transparent={true}
                       visible={showStartDatePicker}
@@ -330,7 +331,19 @@ export default function TaskDetailScreen() {
                         </View>
                       </View>
                     </Modal>
-                  ) : (
+                  )
+                ) : Platform.OS === 'web' ? (
+                  // Web：始终渲染，使用样式控制显示
+                  <DateTimePicker
+                    value={startDate || new Date()}
+                    mode="date"
+                    display="compact"
+                    onChange={handleStartDateChange}
+                    style={{ display: showStartDatePicker ? 'flex' : 'none', marginTop: 10 }}
+                  />
+                ) : (
+                  // Android：条件渲染
+                  showStartDatePicker && (
                     <DateTimePicker
                       value={startDate || new Date()}
                       mode="date"
@@ -353,8 +366,9 @@ export default function TaskDetailScreen() {
                     {endDate ? endDate.toLocaleDateString() : '选择结束日期'}
                   </ThemedText>
                 </TouchableOpacity>
-                {showEndDatePicker && (
-                  Platform.OS === 'ios' ? (
+                {Platform.OS === 'ios' ? (
+                  // iOS：使用 Modal 包装
+                  showEndDatePicker && (
                     <Modal
                       transparent={true}
                       visible={showEndDatePicker}
@@ -383,7 +397,19 @@ export default function TaskDetailScreen() {
                         </View>
                       </View>
                     </Modal>
-                  ) : (
+                  )
+                ) : Platform.OS === 'web' ? (
+                  // Web：始终渲染，使用样式控制显示
+                  <DateTimePicker
+                    value={endDate || new Date()}
+                    mode="date"
+                    display="compact"
+                    onChange={handleEndDateChange}
+                    style={{ display: showEndDatePicker ? 'flex' : 'none', marginTop: 10 }}
+                  />
+                ) : (
+                  // Android：条件渲染
+                  showEndDatePicker && (
                     <DateTimePicker
                       value={endDate || new Date()}
                       mode="date"

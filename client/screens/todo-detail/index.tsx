@@ -339,22 +339,45 @@ export default function TodoDetailScreen() {
             </View>
           </View>
 
-          {showStartTimePicker && (
-            <DateTimePicker
-              value={startTime || new Date()}
-              mode="time"
-              display="default"
-              onChange={handleStartTimeChange}
-            />
-          )}
-
-          {showEndTimePicker && (
-            <DateTimePicker
-              value={endTime || new Date()}
-              mode="time"
-              display="default"
-              onChange={handleEndTimeChange}
-            />
+          {/* Web 端和移动端的时间选择器 */}
+          {Platform.OS === 'web' ? (
+            // Web 端：始终渲染，使用样式控制显示
+            <>
+              <DateTimePicker
+                value={startTime || new Date()}
+                mode="time"
+                display="compact"
+                onChange={handleStartTimeChange}
+                style={{ display: showStartTimePicker ? 'flex' : 'none', marginTop: 10 }}
+              />
+              <DateTimePicker
+                value={endTime || new Date()}
+                mode="time"
+                display="compact"
+                onChange={handleEndTimeChange}
+                style={{ display: showEndTimePicker ? 'flex' : 'none', marginTop: 10 }}
+              />
+            </>
+          ) : (
+            // 移动端：条件渲染
+            <>
+              {showStartTimePicker && (
+                <DateTimePicker
+                  value={startTime || new Date()}
+                  mode="time"
+                  display="default"
+                  onChange={handleStartTimeChange}
+                />
+              )}
+              {showEndTimePicker && (
+                <DateTimePicker
+                  value={endTime || new Date()}
+                  mode="time"
+                  display="default"
+                  onChange={handleEndTimeChange}
+                />
+              )}
+            </>
           )}
 
           {/* 重复设置图标 */}

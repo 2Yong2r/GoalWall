@@ -246,6 +246,7 @@ class WebDatabase {
 
   async runAsync(sql: string, params?: any[]): Promise<SQLite.SQLiteRunResult> {
     console.log('[WebDatabase] Running SQL:', sql.trim());
+    console.log('[WebDatabase] Constructor name:', this.constructor.name);
     
     const upperSql = sql.toUpperCase().trim();
     
@@ -353,11 +354,13 @@ export async function getDatabase(): Promise<any> {
         const db = new WebDatabase();
         dbInstance = db;
         dbPromise = null;
+        console.log('[Database] WebDatabase created:', db.constructor.name);
         return db;
       } else {
         console.log('[Database] Using mobile database (SQLite)');
         const db = await SQLite.openDatabaseAsync(DB_NAME);
         console.log('[Database] Mobile database opened successfully');
+        console.log('[Database] SQLite database type:', db.constructor.name);
         dbInstance = db;
         dbPromise = null;
         return db;
