@@ -57,11 +57,6 @@ export default function SettingsScreen() {
 
   const menuItems = [
     {
-      icon: 'circle-info',
-      title: '关于应用',
-      onPress: () => {},
-    },
-    {
       icon: 'palette',
       title: '皮肤配色',
       value: currentSkin.name,
@@ -150,6 +145,21 @@ export default function SettingsScreen() {
             <ThemedText variant="h4" color={theme.textPrimary} style={styles.sectionTitle}>
               应用信息
             </ThemedText>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {}}
+            >
+              <View style={styles.menuItemLeft}>
+                <View style={styles.menuItemIcon}>
+                  <FontAwesome6 name="circle-info" size={18} color={theme.primary} />
+                </View>
+                <ThemedText variant="body" color={theme.textPrimary}>
+                  关于应用
+                </ThemedText>
+              </View>
+              <FontAwesome6 name="chevron-right" size={16} color={theme.textMuted} />
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.menuItem, styles.menuItemStatic]}

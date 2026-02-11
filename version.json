@@ -1,12 +1,19 @@
 {
-  "version": "0.4.2",
-  "lastUpdated": "2026-02-11T12:20:00Z",
+  "version": "0.4.3",
+  "lastUpdated": "2026-02-11T12:30:00Z",
   "totalFiles": 61,
   "thresholds": {
     "minorVersionFiles": 5,
     "majorVersionFiles": 20
   },
   "history": [
+    {
+      "version": "0.4.3",
+      "releaseDate": "2026-02-11T12:30:00Z",
+      "description": "调整设置页面布局：将“关于应用”从通用设置移动到应用信息中，位于版本条目之上",
+      "filesModified": 1,
+      "changeType": "patch"
+    },
     {
       "version": "0.4.2",
       "releaseDate": "2026-02-11T12:20:00Z",
