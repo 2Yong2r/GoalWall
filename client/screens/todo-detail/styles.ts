@@ -63,63 +63,23 @@ export const createStyles = (theme: Theme) => {
     compactLabel: {
       marginBottom: Spacing.xs,
     },
+    // 优先级菜单
+    priorityMenu: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    priorityMenuOption: {
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     // 优先级触发按钮（单个灰色旗子）
     priorityTrigger: {
       width: 40,
       height: 40,
       justifyContent: 'center',
       alignItems: 'center',
-    },
-    // 优先级选择弹出面板
-    priorityPickerOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    priorityPickerPanel: {
-      backgroundColor: theme.backgroundDefault,
-      borderRadius: BorderRadius.lg,
-      padding: Spacing.lg,
-      width: '80%',
-      maxWidth: 300,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-    priorityPickerTitle: {
-      marginBottom: Spacing.md,
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    priorityOptionsContainer: {
-      gap: Spacing.sm,
-    },
-    priorityOption: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: Spacing.md,
-      borderRadius: BorderRadius.md,
-      backgroundColor: theme.backgroundTertiary,
-      gap: Spacing.md,
-    },
-    priorityOptionSelected: {
-      backgroundColor: theme.primary + '15',
-      borderWidth: 1,
-      borderColor: theme.primary,
-    },
-    priorityOptionFlag: {
-      width: 28,
-      height: 28,
-      borderRadius: 6,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    priorityOptionLabel: {
-      flex: 1,
     },
     // 紧凑按钮样式
     compactButton: {

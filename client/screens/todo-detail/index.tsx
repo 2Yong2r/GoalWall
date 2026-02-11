@@ -163,39 +163,6 @@ export default function TodoDetailScreen() {
     }
   };
 
-  // 优先级选择（弹出面板中的选项）
-  const renderPriorityOption = (value: 'high' | 'medium' | 'low', label: string) => (
-    <TouchableOpacity
-      key={value}
-      style={[
-        styles.priorityOption,
-        priority === value && styles.priorityOptionSelected,
-      ]}
-      onPress={() => {
-        setPriority(value);
-        setShowPriorityPicker(false);
-      }}
-      activeOpacity={0.7}
-    >
-      <View style={[
-        styles.priorityOptionFlag,
-        { backgroundColor: getPriorityColor(value) }
-      ]}>
-        <FontAwesome6 name="flag" size={16} color="white" />
-      </View>
-      <ThemedText
-        variant="body"
-        color={priority === value ? theme.primary : theme.textPrimary}
-        style={styles.priorityOptionLabel}
-      >
-        {label}
-      </ThemedText>
-      {priority === value && (
-        <FontAwesome6 name="check" size={14} color={theme.primary} />
-      )}
-    </TouchableOpacity>
-  );
-
   return (
     <Screen backgroundColor={theme.backgroundRoot} statusBarStyle="dark">
       <KeyboardAvoidingView
@@ -229,18 +196,53 @@ export default function TodoDetailScreen() {
               onChangeText={setTitle}
               autoFocus={isCreateMode}
             />
-            {/* 优先级选择 - 单个灰色旗子图标 */}
-            <TouchableOpacity
-              style={styles.priorityTrigger}
-              onPress={() => setShowPriorityPicker(!showPriorityPicker)}
-              activeOpacity={0.7}
-            >
-              <FontAwesome6
-                name="flag"
-                size={20}
-                color={getPriorityColor(priority)}
-              />
-            </TouchableOpacity>
+            {/* 优先级选择菜单 */}
+            <View style={styles.priorityMenu}>
+              {/* 优先级选项 */}
+              {showPriorityPicker && (
+                <>
+                  <TouchableOpacity
+                    style={styles.priorityMenuOption}
+                    onPress={() => {
+                      setPriority('high');
+                      setShowPriorityPicker(false);
+                    }}
+                  >
+                    <FontAwesome6 name="flag" size={20} color="#F97316" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.priorityMenuOption}
+                    onPress={() => {
+                      setPriority('medium');
+                      setShowPriorityPicker(false);
+                    }}
+                  >
+                    <FontAwesome6 name="flag" size={20} color="#3B82F6" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.priorityMenuOption}
+                    onPress={() => {
+                      setPriority('low');
+                      setShowPriorityPicker(false);
+                    }}
+                  >
+                    <FontAwesome6 name="flag" size={20} color="#9CA3AF" />
+                  </TouchableOpacity>
+                </>
+              )}
+              {/* 优先级触发按钮 */}
+              <TouchableOpacity
+                style={styles.priorityTrigger}
+                onPress={() => setShowPriorityPicker(!showPriorityPicker)}
+                activeOpacity={0.7}
+              >
+                <FontAwesome6
+                  name="flag"
+                  size={20}
+                  color={getPriorityColor(priority)}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* 备注输入 */}
@@ -321,30 +323,6 @@ export default function TodoDetailScreen() {
             </TouchableOpacity>
           </View>
         </ScrollView>
-
-        {/* 优先级选择弹出面板 */}
-        {showPriorityPicker && (
-          <TouchableOpacity
-            style={styles.priorityPickerOverlay}
-            activeOpacity={1}
-            onPress={() => setShowPriorityPicker(false)}
-          >
-            <TouchableOpacity
-              style={styles.priorityPickerPanel}
-              activeOpacity={1}
-              onPress={(e) => e.stopPropagation()}
-            >
-              <ThemedText variant="h4" color={theme.textPrimary} style={styles.priorityPickerTitle}>
-                选择优先级
-              </ThemedText>
-              <View style={styles.priorityOptionsContainer}>
-                {renderPriorityOption('high', '高')}
-                {renderPriorityOption('medium', '中')}
-                {renderPriorityOption('low', '低')}
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        )}
       </View>
       </KeyboardAvoidingView>
     </Screen>
