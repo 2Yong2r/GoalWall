@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { LogBox } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ColorSchemeProvider } from '@/hooks/useColorScheme';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 LogBox.ignoreLogs([
   "TurboModuleRegistry.getEnforcing(...): 'RNMapsAirModule' could not be found",
@@ -15,7 +15,7 @@ LogBox.ignoreLogs([
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <ColorSchemeProvider>
+      <ThemeProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <StatusBar style="dark"></StatusBar>
           <Stack screenOptions={{
@@ -36,7 +36,7 @@ export default function RootLayout() {
           </Stack>
           <Toast />
         </GestureHandlerRootView>
-      </ColorSchemeProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

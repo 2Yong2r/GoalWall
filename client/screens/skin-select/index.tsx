@@ -24,10 +24,13 @@ export default function SkinSelectScreen() {
 
   // 获取皮肤预览色块
   const getSkinPreview = (skinId: string) => {
+    const skinColors = Colors[skinId as keyof typeof Colors] as any;
+    if (!skinColors) return null;
+
     return {
-      primary: Colors[skinId as keyof typeof Colors]?.primary,
-      accent: Colors[skinId as keyof typeof Colors]?.accent,
-      background: Colors[skinId as keyof typeof Colors]?.backgroundRoot,
+      primary: skinColors.primary,
+      accent: skinColors.accent,
+      background: skinColors.backgroundRoot,
     };
   };
 
@@ -44,6 +47,8 @@ export default function SkinSelectScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           {availableSkins.map((skin) => {
             const preview = getSkinPreview(skin.id);
+            if (!preview) return null;
+
             const isSelected = skin.id === skinType;
 
             return (
