@@ -244,11 +244,30 @@ export default function TodosScreen() {
 
   // 日历相关辅助函数
   const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    // 使用本地时间计算，确保与用户时区一致
+    const tempDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return tempDate.getDate();
   };
 
   const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    // 使用基于参考日期的计算方法，确保跨平台一致性
+    // 参考日期：2024-01-01（周一）
+    // 使用 Date.UTC 创建日期，避免时区问题
+    const referenceDate = Date.UTC(2024, 0, 1); // 2024-01-01 00:00:00 UTC
+    const targetDate = Date.UTC(date.getFullYear(), date.getMonth(), 1);
+
+    // 计算两个日期之间的天数差
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const daysDiff = Math.floor((targetDate - referenceDate) / msPerDay);
+
+    // 2024-01-01 是周一（在 getDay() 中，1=周一）
+    // 所以 targetDate 的星期几 = (1 + daysDiff % 7 + 7) % 7
+    // 但我们需要确保返回 0=周日，1=周一，...，6=周六
+    const dayOfWeek = ((1 + daysDiff % 7) + 7) % 7;
+
+    console.log(`[Calendar] ${date.getFullYear()}-${date.getMonth() + 1} first day: ${dayOfWeek} (0=Sun, 1=Mon, ...)`);
+
+    return dayOfWeek;
   };
 
   const isToday = (day: number, month: Date) => {
