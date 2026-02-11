@@ -244,25 +244,12 @@ export default function TodosScreen() {
 
   // 日历相关辅助函数
   const getDaysInMonth = (date: Date) => {
-    // 使用本地时间计算，确保与用户时区一致
-    const tempDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    return tempDate.getDate();
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
 
   const getFirstDayOfMonth = (date: Date) => {
-    // 使用标准 getDay() 方法
-    // 创建该月第一天的日期对象
     const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-
-    // 获取星期几：0=周日，1=周一，...，6=周六
-    const dayOfWeek = firstDay.getDay();
-
-    // 详细调试日志
-    const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-    const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    console.log(`[Calendar] ${date.getFullYear()}年${monthNames[date.getMonth()]}1日是${weekNames[dayOfWeek]} (getDay=${dayOfWeek})`);
-
-    return dayOfWeek;
+    return firstDay.getDay();
   };
 
   const isToday = (day: number, month: Date) => {
@@ -396,13 +383,6 @@ export default function TodosScreen() {
     // 填充日期
     for (let i = 1; i <= daysInMonth; i++) {
       calendarDays.push(i);
-    }
-
-    // 调试：输出日历数组，每行7个
-    console.log(`[Calendar] Month: ${currentMonth.getFullYear()}-${currentMonth.getMonth() + 1}`);
-    for (let row = 0; row < Math.ceil(calendarDays.length / 7); row++) {
-      const rowDays = calendarDays.slice(row * 7, (row + 1) * 7);
-      console.log(`  Row ${row + 1}:`, rowDays.map(d => d === null ? '_' : d).join(', '));
     }
 
     return (
