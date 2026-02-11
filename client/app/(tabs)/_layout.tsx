@@ -32,7 +32,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: '目标墙',
+          title: '目标',
           tabBarIcon: ({ color }) => (
             <FontAwesome6 name="flag" size={20} color={color} />
           ),
@@ -41,7 +41,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="todos"
         options={{
-          title: '待办事项',
+          title: '待办',
           tabBarIcon: ({ color }) => (
             <FontAwesome6 name="list-check" size={20} color={color} />
           ),

@@ -274,7 +274,7 @@ export default function HomeScreen() {
     <Screen backgroundColor={theme.backgroundRoot} statusBarStyle="dark">
       <View style={styles.container}>
         <View style={styles.header}>
-          <ThemedText variant="h2" color={theme.textPrimary}>我的目标</ThemedText>
+          <ThemedText variant="h2" color={theme.textPrimary}>目标墙</ThemedText>
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => router.push('/goal-detail', { mode: 'create' })}

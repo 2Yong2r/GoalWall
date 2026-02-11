@@ -263,7 +263,7 @@ export default function TodosScreen() {
     <Screen backgroundColor={theme.backgroundRoot} statusBarStyle="dark">
       <View style={styles.container}>
         <View style={styles.header}>
-          <ThemedText variant="h2" color={theme.textPrimary}>待办</ThemedText>
+          <ThemedText variant="h2" color={theme.textPrimary}>待办事项</ThemedText>
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => router.push('/todo-detail', { mode: 'create' })}

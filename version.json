@@ -1,6 +1,6 @@
 {
-  "version": "0.4.5",
-  "lastUpdated": "2026-02-11T12:45:00Z",
+  "version": "0.4.6",
+  "lastUpdated": "2026-02-11T12:50:00Z",
   "totalFiles": 61,
   "thresholds": {
     "minorVersionFiles": 5,
@@ -8,10 +8,10 @@
   },
   "history": [
     {
-      "version": "0.4.5",
-      "releaseDate": "2026-02-11T12:45:00Z",
-      "description": "修改Tab栏页面标题：'目标'改为'目标墙'，'待办'改为'待办事项'",
-      "filesModified": 1,
+      "version": "0.4.6",
+      "releaseDate": "2026-02-11T12:50:00Z",
+      "description": "修改页面标题：'我的目标'改为'目标墙'，'待办'改为'待办事项'",
+      "filesModified": 2,
       "changeType": "patch"
     },
     {
