@@ -11,8 +11,8 @@ export const createStyles = (theme: Theme) => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: Spacing.lg,
-      paddingTop: Spacing['2xl'],
+      paddingHorizontal: Spacing.xl,
+      paddingTop: Spacing.xl,
       paddingBottom: Spacing.lg,
     },
     backButton: {
@@ -21,15 +21,57 @@ export const createStyles = (theme: Theme) => {
     editButton: {
       padding: Spacing.xs,
     },
-    content: {
-      paddingHorizontal: Spacing.lg,
-      paddingBottom: Spacing['5xl'],
+    // 创建模式表单
+    createForm: {
+      flex: 1,
+      paddingHorizontal: Spacing.xl,
+      paddingTop: Spacing.lg,
+    },
+    formCard: {
+      backgroundColor: theme.backgroundDefault,
+      borderRadius: BorderRadius.lg,
+      padding: Spacing.xl,
+    },
+    formGroup: {
+      marginBottom: Spacing.lg,
+    },
+    label: {
+      marginBottom: Spacing.sm,
+    },
+    input: {
+      backgroundColor: theme.backgroundTertiary,
+      borderRadius: BorderRadius.md,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.md,
+      fontSize: 16,
+      color: theme.textPrimary,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    textArea: {
+      height: 120,
+      textAlignVertical: 'top',
+    },
+    saveButton: {
+      backgroundColor: theme.primary,
+      paddingVertical: Spacing.lg,
+      borderRadius: BorderRadius.md,
+      alignItems: 'center',
+    },
+    fullWidthButton: {
+      marginTop: Spacing.lg,
+    },
+    // 详情模式
+    detailContent: {
+      flex: 1,
     },
     goalInfoCard: {
       backgroundColor: theme.backgroundDefault,
       borderRadius: BorderRadius.lg,
-      padding: Spacing.lg,
-      marginBottom: Spacing.xl,
+      padding: Spacing.xl,
+      marginHorizontal: Spacing.xl,
+      marginTop: Spacing.lg,
+      marginBottom: Spacing.lg,
     },
     goalHeader: {
       flexDirection: 'row',
@@ -49,14 +91,16 @@ export const createStyles = (theme: Theme) => {
       fontSize: 14,
       lineHeight: 20,
     },
+    // 任务列表
     tasksSection: {
       flex: 1,
+      paddingHorizontal: Spacing.xl,
     },
     tasksHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: Spacing.sm,
+      marginBottom: Spacing.md,
     },
     addTaskButton: {
       width: 32,
@@ -67,13 +111,21 @@ export const createStyles = (theme: Theme) => {
       alignItems: 'center',
     },
     tasksList: {
-      paddingBottom: Spacing.md,
+      paddingBottom: Spacing.xl,
     },
     taskCard: {
       backgroundColor: theme.backgroundDefault,
       borderRadius: BorderRadius.md,
-      padding: Spacing.md,
-      marginBottom: Spacing.xs,
+      padding: Spacing.lg,
+      marginBottom: Spacing.sm,
+      shadowColor: theme.primary,
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
     },
     taskMainContent: {
       flexDirection: 'row',
@@ -131,6 +183,7 @@ export const createStyles = (theme: Theme) => {
       marginTop: Spacing.md,
       textAlign: 'center',
     },
+    // Modal
     modalOverlay: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -174,28 +227,8 @@ export const createStyles = (theme: Theme) => {
     cancelButton: {
       backgroundColor: theme.backgroundTertiary,
     },
-    saveButton: {
+    modalSaveButton: {
       backgroundColor: theme.primary,
-    },
-    formGroup: {
-      marginBottom: Spacing.lg,
-    },
-    label: {
-      marginBottom: Spacing.sm,
-    },
-    input: {
-      backgroundColor: theme.backgroundTertiary,
-      borderRadius: BorderRadius.md,
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.md,
-      fontSize: 16,
-      color: theme.textPrimary,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-    textArea: {
-      height: 100,
-      textAlignVertical: 'top',
     },
   });
 };

@@ -209,42 +209,75 @@ export default function GoalDetailScreen() {
 
   return (
     <Screen backgroundColor={theme.backgroundRoot} statusBarStyle="dark">
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <FontAwesome6 name="arrow-left" size={20} color={theme.textPrimary} />
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <FontAwesome6 name="arrow-left" size={20} color={theme.textPrimary} />
+          </TouchableOpacity>
+          <ThemedText variant="h3" color={theme.textPrimary}>
+            {isCreateMode ? '创建目标' : '目标详情'}
+          </ThemedText>
+          {!isCreateMode && (
+            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.editButton}>
+              <FontAwesome6 name="pen" size={18} color={theme.textPrimary} />
             </TouchableOpacity>
-            <ThemedText variant="h3" color={theme.textPrimary}>
-              {isCreateMode ? '创建目标' : '目标详情'}
-            </ThemedText>
-            {!isCreateMode && (
-              <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.editButton}>
-                <FontAwesome6 name="pen" size={18} color={theme.textPrimary} />
-              </TouchableOpacity>
-            )}
-          </View>
+          )}
+        </View>
 
-          <ScrollView contentContainerStyle={styles.content}>
+        {/* 创建模式：直接显示表单 */}
+        {isCreateMode ? (
+          <View style={styles.createForm}>
+            <ThemedView level="default" style={styles.formCard}>
+              <View style={styles.formGroup}>
+                <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
+                  目标名称 *
+                </ThemedText>
+                <TextInput
+                  style={styles.input}
+                  value={goalName}
+                  onChangeText={setGoalName}
+                  placeholder="请输入目标名称"
+                  placeholderTextColor={theme.textMuted}
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
+                  目标描述
+                </ThemedText>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={goalDescription}
+                  onChangeText={setGoalDescription}
+                  placeholder="请输入目标描述（可选）"
+                  placeholderTextColor={theme.textMuted}
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.saveButton, styles.fullWidthButton]}
+                onPress={handleSaveGoal}
+              >
+                <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>创建目标</ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
+          </View>
+        ) : (
+          /* 编辑/查看模式：显示目标信息和任务列表 */
+          <View style={styles.detailContent}>
             {/* 目标信息 */}
             <ThemedView level="default" style={styles.goalInfoCard}>
               <View style={styles.goalHeader}>
                 <ThemedText variant="h4" color={theme.textPrimary} style={styles.goalName}>
-                  {isCreateMode ? goalName || '新目标' : goal?.name}
+                  {goal?.name}
                 </ThemedText>
-                {isCreateMode && (
-                  <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.inlineEdit}>
-                    <FontAwesome6 name="pen" size={16} color={theme.primary} />
-                  </TouchableOpacity>
-                )}
               </View>
-              {(goal?.description || goalDescription) && (
+              {goal?.description && (
                 <ThemedText variant="body" color={theme.textSecondary} style={styles.goalDescription}>
-                  {isCreateMode ? goalDescription : goal?.description}
+                  {goal.description}
                 </ThemedText>
               )}
             </ThemedView>
@@ -263,7 +296,7 @@ export default function GoalDetailScreen() {
                 renderItem={renderTaskItem}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.tasksList}
-                scrollEnabled={false}
+                scrollEnabled={true}
                 ListEmptyComponent={
                   <View style={styles.emptyContainer}>
                     <FontAwesome6 name="clipboard-list" size={48} color={theme.textMuted} />
@@ -274,9 +307,9 @@ export default function GoalDetailScreen() {
                 }
               />
             </View>
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
+          </View>
+        )}
+      </View>
 
       {/* 编辑目标 Modal */}
       <Modal
@@ -341,7 +374,7 @@ export default function GoalDetailScreen() {
                     <ThemedText variant="bodyMedium" color={theme.textSecondary}>取消</ThemedText>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.modalButton, styles.saveButton]}
+                    style={[styles.modalButton, styles.modalSaveButton]}
                     onPress={handleSaveGoal}
                   >
                     <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>保存</ThemedText>

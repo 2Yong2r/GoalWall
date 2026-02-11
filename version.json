@@ -1,12 +1,19 @@
 {
-  "version": "0.4.3",
-  "lastUpdated": "2026-02-11T12:30:00Z",
+  "version": "0.4.4",
+  "lastUpdated": "2026-02-11T12:40:00Z",
   "totalFiles": 61,
   "thresholds": {
     "minorVersionFiles": 5,
     "majorVersionFiles": 20
   },
   "history": [
+    {
+      "version": "0.4.4",
+      "releaseDate": "2026-02-11T12:40:00Z",
+      "description": "优化创建目标页面：取消滚动条，调整布局使界面更美观",
+      "filesModified": 2,
+      "changeType": "patch"
+    },
     {
       "version": "0.4.3",
       "releaseDate": "2026-02-11T12:30:00Z",
