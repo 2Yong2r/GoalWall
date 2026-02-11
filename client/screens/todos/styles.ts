@@ -137,9 +137,6 @@ export const createStyles = (theme: Theme) => {
     todoDateInline: {
       fontSize: 12,
     },
-    todoDescription: {
-      marginTop: Spacing.xs,
-    },
     swipeDeleteButton: {
       backgroundColor: '#EF4444',
       justifyContent: 'center',

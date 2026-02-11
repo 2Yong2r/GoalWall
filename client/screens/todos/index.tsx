@@ -240,16 +240,6 @@ export default function TodosScreen() {
                 </ThemedText>
               )}
             </View>
-            {item.description && (
-              <ThemedText
-                variant="caption"
-                color={theme.textMuted}
-                style={styles.todoDescription}
-                numberOfLines={2}
-              >
-                {item.description}
-              </ThemedText>
-            )}
           </View>
         </View>
       </TouchableOpacity>
