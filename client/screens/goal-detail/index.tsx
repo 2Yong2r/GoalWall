@@ -29,7 +29,7 @@ export default function GoalDetailScreen() {
 
   // 获取目标详情（使用本地 API）
   const fetchGoalDetail = useCallback(async () => {
-    if (!params.goalId || isCreateMode) return;
+    if (!params.goalId) return;
 
     setLoading(true);
     try {
@@ -46,11 +46,11 @@ export default function GoalDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [params.goalId, isCreateMode]);
+  }, [params.goalId]);
 
   // 获取目标任务（使用本地 API）
   const fetchTasks = useCallback(async () => {
-    if (!params.goalId || isCreateMode) return;
+    if (!params.goalId) return;
 
     try {
       const tasksData = await localApiService.getTasksByGoal(params.goalId);
@@ -58,14 +58,33 @@ export default function GoalDetailScreen() {
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
     }
-  }, [params.goalId, isCreateMode]);
+  }, [params.goalId]);
 
   // 页面聚焦时刷新数据
   useFocusEffect(
     useCallback(() => {
-      fetchGoalDetail();
-      fetchTasks();
-    }, [fetchGoalDetail, fetchTasks])
+      if (params.goalId) {
+        setLoading(true);
+        Promise.all([
+          localApiService.getGoal(params.goalId),
+          localApiService.getTasksByGoal(params.goalId),
+        ])
+          .then(([goalData, tasksData]) => {
+            if (goalData) {
+              setGoal(goalData);
+              setGoalName(goalData.name);
+              setGoalDescription(goalData.description || '');
+            }
+            setTasks(tasksData);
+          })
+          .catch((error) => {
+            console.error('Failed to fetch data:', error);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      }
+    }, [params.goalId])
   );
 
   // 开始编辑
