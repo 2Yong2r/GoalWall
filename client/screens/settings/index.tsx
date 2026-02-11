@@ -166,7 +166,10 @@ export default function SettingsScreen() {
               onPress={() => router.push('/version-history')}
             >
               <View style={styles.menuItemLeft}>
-                <ThemedText variant="body" color={theme.textSecondary}>
+                <View style={styles.menuItemIcon}>
+                  <FontAwesome6 name="tag" size={18} color={theme.primary} />
+                </View>
+                <ThemedText variant="body" color={theme.textPrimary}>
                   版本
                 </ThemedText>
               </View>
