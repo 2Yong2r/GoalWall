@@ -394,6 +394,13 @@ export default function TaskDetailScreen() {
               </View>
             </ThemedView>
 
+            {/* 保存按钮 */}
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+              <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>
+                {isCreateMode ? '创建任务' : '保存'}
+              </ThemedText>
+            </TouchableOpacity>
+
             {/* 更新记录 */}
             {!isCreateMode && updates.length > 0 && (
               <ThemedView level="default" style={styles.updatesCard}>
@@ -408,13 +415,6 @@ export default function TaskDetailScreen() {
                 />
               </ThemedView>
             )}
-
-            {/* 保存按钮 */}
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>
-                {isCreateMode ? '创建任务' : '保存'}
-              </ThemedText>
-            </TouchableOpacity>
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
