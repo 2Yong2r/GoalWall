@@ -250,22 +250,17 @@ export default function TodosScreen() {
   };
 
   const getFirstDayOfMonth = (date: Date) => {
-    // 使用基于参考日期的计算方法，确保跨平台一致性
-    // 参考日期：2024-01-01（周一）
-    // 使用 Date.UTC 创建日期，避免时区问题
-    const referenceDate = Date.UTC(2024, 0, 1); // 2024-01-01 00:00:00 UTC
-    const targetDate = Date.UTC(date.getFullYear(), date.getMonth(), 1);
+    // 使用标准 getDay() 方法
+    // 创建该月第一天的日期对象
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
 
-    // 计算两个日期之间的天数差
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const daysDiff = Math.floor((targetDate - referenceDate) / msPerDay);
+    // 获取星期几：0=周日，1=周一，...，6=周六
+    const dayOfWeek = firstDay.getDay();
 
-    // 2024-01-01 是周一（在 getDay() 中，1=周一）
-    // 所以 targetDate 的星期几 = (1 + daysDiff % 7 + 7) % 7
-    // 但我们需要确保返回 0=周日，1=周一，...，6=周六
-    const dayOfWeek = ((1 + daysDiff % 7) + 7) % 7;
-
-    console.log(`[Calendar] ${date.getFullYear()}-${date.getMonth() + 1} first day: ${dayOfWeek} (0=Sun, 1=Mon, ...)`);
+    // 详细调试日志
+    const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+    const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    console.log(`[Calendar] ${date.getFullYear()}年${monthNames[date.getMonth()]}1日是${weekNames[dayOfWeek]} (getDay=${dayOfWeek})`);
 
     return dayOfWeek;
   };
@@ -401,6 +396,13 @@ export default function TodosScreen() {
     // 填充日期
     for (let i = 1; i <= daysInMonth; i++) {
       calendarDays.push(i);
+    }
+
+    // 调试：输出日历数组，每行7个
+    console.log(`[Calendar] Month: ${currentMonth.getFullYear()}-${currentMonth.getMonth() + 1}`);
+    for (let row = 0; row < Math.ceil(calendarDays.length / 7); row++) {
+      const rowDays = calendarDays.slice(row * 7, (row + 1) * 7);
+      console.log(`  Row ${row + 1}:`, rowDays.map(d => d === null ? '_' : d).join(', '));
     }
 
     return (

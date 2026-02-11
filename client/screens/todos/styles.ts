@@ -164,7 +164,7 @@ export const createStyles = (theme: Theme) => {
       flex: 1,
     },
     calendarCell: {
-      width: `${100 / 7}%`,
+      flex: 1,
       borderWidth: 1,
       borderColor: theme.border,
       backgroundColor: theme.backgroundDefault,
