@@ -1,12 +1,19 @@
 {
-  "version": "0.4.0",
-  "lastUpdated": "2026-02-11T12:00:00Z",
-  "totalFiles": 60,
+  "version": "0.4.1",
+  "lastUpdated": "2026-02-11T12:10:00Z",
+  "totalFiles": 61,
   "thresholds": {
     "minorVersionFiles": 5,
     "majorVersionFiles": 20
   },
   "history": [
+    {
+      "version": "0.4.1",
+      "releaseDate": "2026-02-11T12:10:00Z",
+      "description": "修复皮肤配色切换后不生效的问题，新增 ThemeContext 实现全局主题状态管理",
+      "filesModified": 4,
+      "changeType": "patch"
+    },
     {
       "version": "0.4.0",
       "releaseDate": "2026-02-11T12:00:00Z",
