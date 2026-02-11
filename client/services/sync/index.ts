@@ -99,12 +99,11 @@ class SyncManager {
    */
   private async isBackendAvailable(): Promise<boolean> {
     if (!this.backendUrl) {
-      console.warn('[Sync] Backend URL is empty');
+      // 静默返回 false，不输出警告
       return false;
     }
 
     const healthUrl = `${this.backendUrl}/api/v1/health`;
-    console.log('[Sync] Checking backend health at:', healthUrl);
 
     try {
       // 使用 Promise.race 实现超时（兼容性更好）
@@ -117,11 +116,10 @@ class SyncManager {
         timeoutPromise,
       ]);
 
-      const result = await response.json();
-      console.log('[Sync] Backend health check result:', result);
       return response.ok;
     } catch (error) {
-      console.error('[Sync] Backend health check failed:', error);
+      // 静默处理网络错误，避免频繁输出日志
+      // 手机在本地开发时无法访问到后端是正常情况
       return false;
     }
   }
@@ -320,10 +318,8 @@ class SyncManager {
     // 检查后端是否可用
     const isAvailable = await this.isBackendAvailable();
     if (!isAvailable) {
-      this.updateState({
-        status: 'error',
-        errorMessage: '后端服务不可用，数据已保存到本地',
-      });
+      // 后端不可用时静默返回，不设置错误状态
+      // 手机在本地开发时无法访问到后端是正常情况
       return;
     }
 
