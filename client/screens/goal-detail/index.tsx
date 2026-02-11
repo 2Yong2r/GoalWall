@@ -226,7 +226,7 @@ export default function GoalDetailScreen() {
               <View style={styles.tasksHeader}>
                 <ThemedText variant="h4" color={theme.textPrimary}>任务列表</ThemedText>
                 <TouchableOpacity onPress={handleAddTask} style={styles.addTaskButton}>
-                  <FontAwesome6 name="plus" size={18} color={theme.primary} />
+                  <FontAwesome6 name="plus" size={16} color={theme.primary} />
                 </TouchableOpacity>
               </View>
 
