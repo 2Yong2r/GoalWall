@@ -1,35 +1,120 @@
+// 皮肤类型定义
+export type SkinType = 'minimal-blue' | 'vibrant-orange' | 'forest-green' | 'sakura-pink' | 'deep-purple';
+
+// 皮肤配置
+export const SkinConfig = {
+  'minimal-blue': {
+    name: '极简蓝',
+    description: '简洁专业，高效专注',
+    icon: '💙',
+  },
+  'vibrant-orange': {
+    name: '活力橙',
+    description: '温暖积极，激励前行',
+    icon: '🧡',
+  },
+  'forest-green': {
+    name: '森林绿',
+    description: '自然治愈，平静专注',
+    icon: '💚',
+  },
+  'sakura-pink': {
+    name: '樱花粉',
+    description: '柔美优雅，温馨陪伴',
+    icon: '💗',
+  },
+  'deep-purple': {
+    name: '深空紫',
+    description: '神秘高端，个性十足',
+    icon: '💜',
+  },
+};
+
 export const Colors = {
-  light: {
+  // 1. 极简蓝（默认）- 科技蓝，简洁专业
+  'minimal-blue': {
     textPrimary: "#1C1917",
     textSecondary: "#78716c",
     textMuted: "#9CA3AF",
-    primary: "#4F46E5", // Indigo-600 - 品牌主色，代表科技与智能
-    accent: "#8B5CF6", // Violet-500 - 辅助色，代表创造力
+    primary: "#4F46E5", // Indigo-600
+    accent: "#8B5CF6", // Violet-500
     success: "#10B981", // Emerald-500
     error: "#EF4444",
-    backgroundRoot: "#FAFAFA",
+    backgroundRoot: "#F3F4F6", // Cool Gray-100
     backgroundDefault: "#FFFFFF",
-    backgroundTertiary: "#F9FAFB", // 更浅的背景色，用于去线留白
+    backgroundTertiary: "#F9FAFB",
     buttonPrimaryText: "#FFFFFF",
     tabIconSelected: "#4F46E5",
     border: "#E5E7EB",
     borderLight: "#F3F4F6",
   },
-  dark: {
-    textPrimary: "#FAFAF9",
-    textSecondary: "#A8A29E",
-    textMuted: "#6F767E",
-    primary: "#818CF8", // Indigo-400 - 暗色模式品牌主色
-    accent: "#A78BFA", // Violet-400
-    success: "#34D399",
-    error: "#F87171",
-    backgroundRoot: "#09090B", // 更深的背景色
-    backgroundDefault: "#1C1C1E",
-    backgroundTertiary: "#1F1F22", // 暗色模式去线留白背景
-    buttonPrimaryText: "#09090B",
-    tabIconSelected: "#818CF8",
-    border: "#3F3F46",
-    borderLight: "#27272A",
+  // 2. 活力橙 - 温暖橙色，积极向上
+  'vibrant-orange': {
+    textPrimary: "#1C1917",
+    textSecondary: "#92400E",
+    textMuted: "#9CA3AF",
+    primary: "#F97316", // Orange-500
+    accent: "#FB923C", // Orange-400
+    success: "#10B981",
+    error: "#EF4444",
+    backgroundRoot: "#FFF7ED", // Orange-50
+    backgroundDefault: "#FFFFFF",
+    backgroundTertiary: "#FFFDF7",
+    buttonPrimaryText: "#FFFFFF",
+    tabIconSelected: "#F97316",
+    border: "#FDBA74",
+    borderLight: "#FFEDD5",
+  },
+  // 3. 森林绿 - 自然绿色，平静专注
+  'forest-green': {
+    textPrimary: "#1C1917",
+    textSecondary: "#3F6212",
+    textMuted: "#9CA3AF",
+    primary: "#059669", // Emerald-600
+    accent: "#34D399", // Emerald-400
+    success: "#10B981",
+    error: "#EF4444",
+    backgroundRoot: "#F0FDF4", // Green-50
+    backgroundDefault: "#FFFFFF",
+    backgroundTertiary: "#F0FDF9",
+    buttonPrimaryText: "#FFFFFF",
+    tabIconSelected: "#059669",
+    border: "#86EFAC",
+    borderLight: "#DCFCE7",
+  },
+  // 4. 樱花粉 - 柔美粉色，优雅温馨
+  'sakura-pink': {
+    textPrimary: "#1C1917",
+    textSecondary: "#9F1239",
+    textMuted: "#9CA3AF",
+    primary: "#EC4899", // Pink-500
+    accent: "#F472B6", // Pink-400
+    success: "#10B981",
+    error: "#EF4444",
+    backgroundRoot: "#FDF2F8", // Pink-50
+    backgroundDefault: "#FFFFFF",
+    backgroundTertiary: "#FDF4FA",
+    buttonPrimaryText: "#FFFFFF",
+    tabIconSelected: "#EC4899",
+    border: "#F9A8D4",
+    borderLight: "#FCE7F3",
+  },
+  // 5. 深空紫 - 神秘紫色，高端科技
+  'deep-purple': {
+    textPrimary: "#1C1917",
+    textSecondary: "#5B21B6",
+    textMuted: "#9CA3AF",
+    primary: "#7C3AED", // Violet-600
+    accent: "#8B5CF6", // Violet-500
+    success: "#10B981",
+    error: "#EF4444",
+    backgroundRoot: "#F5F3FF", // Violet-50
+    backgroundDefault: "#FFFFFF",
+    backgroundTertiary: "#F5F3FF",
+    buttonPrimaryText: "#FFFFFF",
+    tabIconSelected: "#7C3AED",
+    border: "#C4B5FD",
+    borderLight: "#EDE9FE",
   },
 };
 
@@ -174,4 +259,4 @@ export const Typography = {
   },
 };
 
-export type Theme = typeof Colors.light;
+export type Theme = typeof Colors['minimal-blue'];

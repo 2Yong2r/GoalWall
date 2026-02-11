@@ -32,6 +32,7 @@ export default function RootLayout() {
             <Stack.Screen name="todo-detail" options={{ title: "" }} />
             <Stack.Screen name="version-history" options={{ title: "" }} />
             <Stack.Screen name="trash" options={{ title: "" }} />
+            <Stack.Screen name="skin-select" options={{ title: "" }} />
           </Stack>
           <Toast />
         </GestureHandlerRootView>

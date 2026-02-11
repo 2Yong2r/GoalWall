@@ -6,10 +6,10 @@ import { Screen } from '@/components/Screen';
 import { styles } from './styles';
 
 export default function DemoPage() {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
 
   return (
-    <Screen backgroundColor={theme.backgroundRoot} statusBarStyle={isDark ? 'light' : 'dark'}>
+    <Screen backgroundColor={theme.backgroundRoot} statusBarStyle="dark">
       <View
         style={styles.container}
       >

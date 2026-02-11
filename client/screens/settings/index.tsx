@@ -27,7 +27,7 @@ interface VersionData {
 }
 
 export default function SettingsScreen() {
-  const { theme } = useTheme();
+  const { theme, skinType, getSkinInfo } = useTheme();
   const styles = createStyles(theme);
   const router = useSafeRouter();
   const [version, setVersion] = useState<string>('加载中...');
@@ -52,6 +52,9 @@ export default function SettingsScreen() {
     }, [fetchVersion])
   );
 
+  // 获取当前皮肤信息
+  const currentSkin = getSkinInfo();
+
   const menuItems = [
     {
       icon: 'circle-info',
@@ -59,9 +62,10 @@ export default function SettingsScreen() {
       onPress: () => {},
     },
     {
-      icon: 'moon',
-      title: '深色模式',
-      onPress: () => {},
+      icon: 'palette',
+      title: '皮肤配色',
+      value: currentSkin.name,
+      onPress: () => router.push('/skin-select'),
     },
     {
       icon: 'bell',
@@ -100,7 +104,14 @@ export default function SettingsScreen() {
                     {item.title}
                   </ThemedText>
                 </View>
-                <FontAwesome6 name="chevron-right" size={16} color={theme.textMuted} />
+                <View style={styles.menuItemRight}>
+                  {item.value && (
+                    <ThemedText variant="small" color={theme.textMuted} style={styles.menuValue}>
+                      {item.value}
+                    </ThemedText>
+                  )}
+                  <FontAwesome6 name="chevron-right" size={16} color={theme.textMuted} />
+                </View>
               </TouchableOpacity>
             ))}
           </ThemedView>
