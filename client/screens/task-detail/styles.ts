@@ -51,6 +51,22 @@ export const createStyles = (theme: Theme) => {
       height: 100,
       textAlignVertical: 'top',
     },
+    prioritySelector: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+    },
+    priorityButton: {
+      flex: 1,
+      paddingVertical: Spacing.sm,
+      borderRadius: BorderRadius.md,
+      alignItems: 'center',
+      backgroundColor: theme.backgroundTertiary,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    priorityButtonActive: {
+      borderWidth: 0,
+    },
     dateButton: {
       flexDirection: 'row',
       alignItems: 'center',

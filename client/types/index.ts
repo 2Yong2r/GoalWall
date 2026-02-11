@@ -10,7 +10,7 @@ export interface Task {
   id: string;
   goalId: string | null;
   description: string;
-  weight: number;
+  priority: 'high' | 'medium' | 'low';
   startDate: string | null;
   endDate: string | null;
   completionPercentage: number;

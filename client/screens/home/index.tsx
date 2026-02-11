@@ -80,14 +80,10 @@ export default function HomeScreen() {
         } as GoalWithStats;
       }
 
-      // 计算进度（加权平均）
-      let totalWeight = 0;
-      let weightedProgress = 0;
-      goalTasks.forEach(task => {
-        weightedProgress += task.completionPercentage * task.weight;
-        totalWeight += task.weight;
-      });
-      const progress = totalWeight > 0 ? Math.round(weightedProgress / totalWeight) : 0;
+      // 计算进度（简单平均：各任务进度总和 / 任务数）
+      const progress = goalTasks.length > 0
+        ? Math.round(goalTasks.reduce((sum, task) => sum + task.completionPercentage, 0) / goalTasks.length)
+        : 0;
 
       // 计算日期范围
       const startDates = goalTasks

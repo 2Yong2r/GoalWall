@@ -63,8 +63,8 @@ export class TaskManager {
     if (validated.description !== undefined && validated.description !== existingTask.description) {
       changes.push('描述');
     }
-    if (validated.weight !== undefined && validated.weight !== existingTask.weight) {
-      changes.push(`权重 (${existingTask.weight} → ${validated.weight})`);
+    if (validated.priority !== undefined && validated.priority !== existingTask.priority) {
+      changes.push(`优先级 (${existingTask.priority} → ${validated.priority})`);
     }
     if (validated.startDate !== undefined && validated.startDate !== existingTask.startDate) {
       changes.push('开始日期');

@@ -8,9 +8,13 @@ import {
   integer,
   jsonb,
   index,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { createSchemaFactory } from "drizzle-zod";
 import { z } from "zod";
+
+// 优先级枚举
+export const priorityEnum = pgEnum("priority", ["high", "medium", "low"]);
 
 // 目标表
 export const goals = pgTable(
@@ -44,7 +48,7 @@ export const tasks = pgTable(
       .default(sql`gen_random_uuid()`),
     goalId: varchar("goal_id", { length: 36 }), // 关联的目标ID，可为null（独立任务）
     description: text("description").notNull(),
-    weight: integer("weight").default(1).notNull(), // 权重
+    priority: priorityEnum("priority").notNull().default("medium"), // 优先级：high(高)、medium(中)、low(低)
     startDate: timestamp("start_date", { withTimezone: true, mode: 'date' }), // 开始日期
     endDate: timestamp("end_date", { withTimezone: true, mode: 'date' }), // 结束日期
     completionPercentage: integer("completion_percentage").default(0).notNull(), // 完成百分比 (0-100)
@@ -105,7 +109,7 @@ export const updateGoalSchema = createCoercedInsertSchema(goals)
 export const insertTaskSchema = createCoercedInsertSchema(tasks).pick({
   goalId: true,
   description: true,
-  weight: true,
+  priority: true,
   startDate: true,
   endDate: true,
   completionPercentage: true,
@@ -116,7 +120,7 @@ export const updateTaskSchema = createCoercedInsertSchema(tasks)
   .pick({
     goalId: true,
     description: true,
-    weight: true,
+    priority: true,
     startDate: true,
     endDate: true,
     completionPercentage: true,

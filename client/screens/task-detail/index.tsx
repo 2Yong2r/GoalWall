@@ -27,7 +27,7 @@ export default function TaskDetailScreen() {
 
   // 表单数据
   const [description, setDescription] = useState('');
-  const [weight, setWeight] = useState('1');
+  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [completionPercentage, setCompletionPercentage] = useState('0');
@@ -43,7 +43,7 @@ export default function TaskDetailScreen() {
       if (result.success) {
         setTask(result.data);
         setDescription(result.data.description);
-        setWeight(String(result.data.weight));
+        setPriority((result.data.priority as 'high' | 'medium' | 'low') || 'medium');
         setCompletionPercentage(String(result.data.completionPercentage));
         setStartDate(result.data.startDate ? new Date(result.data.startDate) : null);
         setEndDate(result.data.endDate ? new Date(result.data.endDate) : null);
@@ -92,7 +92,7 @@ export default function TaskDetailScreen() {
 
       const body: any = {
         description: description.trim(),
-        weight: parseInt(weight) || 1,
+        priority: priority,
         completionPercentage: parseInt(completionPercentage) || 0,
       };
 
@@ -241,16 +241,28 @@ export default function TaskDetailScreen() {
 
               <View style={styles.formGroup}>
                 <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-                  权重
+                  优先级
                 </ThemedText>
-                <TextInput
-                  style={styles.input}
-                  value={weight}
-                  onChangeText={setWeight}
-                  placeholder="1"
-                  placeholderTextColor={theme.textMuted}
-                  keyboardType="numeric"
-                />
+                <View style={styles.prioritySelector}>
+                  {(['high', 'medium', 'low'] as const).map((p) => (
+                    <TouchableOpacity
+                      key={p}
+                      style={[
+                        styles.priorityButton,
+                        priority === p && styles.priorityButtonActive,
+                        priority === p && { backgroundColor: p === 'high' ? '#F97316' : p === 'medium' ? '#3B82F6' : '#9CA3AF' },
+                      ]}
+                      onPress={() => setPriority(p)}
+                    >
+                      <ThemedText
+                        variant="caption"
+                        color={priority === p ? '#FFFFFF' : theme.textSecondary}
+                      >
+                        {p === 'high' ? '高' : p === 'medium' ? '中' : '低'}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
 
               <View style={styles.formGroup}>

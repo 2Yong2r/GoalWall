@@ -50,11 +50,10 @@ export const createStyles = (theme: Theme) => {
       gap: Spacing.xs,
       marginBottom: Spacing.xs,
     },
-    weightTag: {
-      backgroundColor: `${theme.primary}15`,
-      paddingHorizontal: Spacing.xs,
-      paddingVertical: 2,
-      borderRadius: BorderRadius.xs,
+    priorityTag: {
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: 4,
+      borderRadius: BorderRadius.sm,
       alignSelf: 'flex-start',
     },
     goalTag: {

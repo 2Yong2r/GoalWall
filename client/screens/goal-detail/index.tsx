@@ -155,10 +155,17 @@ export default function GoalDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* 属性标签：权重 */}
+      {/* 属性标签：优先级 */}
       <View style={styles.taskAttributes}>
-        <View style={styles.weightTag}>
-          <ThemedText variant="caption" color={theme.primary}>权重 {item.weight}</ThemedText>
+        <View style={[
+          styles.priorityTag,
+          item.priority === 'high' && { backgroundColor: '#F97316' },
+          item.priority === 'medium' && { backgroundColor: '#3B82F6' },
+          item.priority === 'low' && { backgroundColor: '#9CA3AF' },
+        ]}>
+          <ThemedText variant="caption" color="#FFFFFF">
+            {item.priority === 'high' ? '高优先级' : item.priority === 'medium' ? '中优先级' : '低优先级'}
+          </ThemedText>
         </View>
       </View>
 
