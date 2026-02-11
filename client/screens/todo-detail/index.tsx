@@ -87,12 +87,12 @@ export default function TodoDetailScreen() {
       }
 
       if (isCreateMode) {
-        await localApiService.createTodo(todoData);
+        const newTodo = await localApiService.createTodo(todoData);
+        router.replace('/todo-detail', { todoId: newTodo.id });
       } else {
         await localApiService.updateTodo(params.todoId!, todoData);
+        router.back();
       }
-
-      router.back();
     } catch (error) {
       console.error('Failed to save todo:', error);
       Alert.alert('错误', '保存待办失败');

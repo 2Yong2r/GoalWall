@@ -162,21 +162,12 @@ export class LocalApiService {
     await TaskDAL.createTask({ id, ...data });
     syncManager.triggerSync();
 
-    return {
-      id,
-      goalId: data.goalId || null,
-      description: data.description,
-      priority: data.priority || 'medium',
-      startDate: data.startDate || null,
-      endDate: data.endDate || null,
-      completionPercentage: data.completionPercentage || 0,
-      isRepeat: data.isRepeat || false,
-      repeatInterval: data.repeatInterval || 1,
-      repeatUnit: data.repeatUnit || null,
-      repeatEndDate: data.repeatEndDate || null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Task;
+    // 返回新创建的任务
+    const task = await TaskDAL.getTask(id);
+    if (!task) {
+      throw new Error('Task not found after creation');
+    }
+    return this.transformTask(task);
   }
 
   /**
@@ -278,21 +269,12 @@ export class LocalApiService {
     });
     syncManager.triggerSync();
 
-    return {
-      id,
-      title: data.title,
-      description: data.description || null,
-      dueDate: data.dueDate || null,
-      priority: data.priority || 'medium',
-      status: data.status || 'pending',
-      completedAt: null,
-      isRepeat: data.isRepeat || false,
-      repeatInterval: data.repeatInterval || 1,
-      repeatUnit: data.repeatUnit || null,
-      repeatEndDate: data.repeatEndDate || null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Todo;
+    // 返回新创建的待办
+    const todo = await TodoDAL.getTodo(id);
+    if (!todo) {
+      throw new Error('Todo not found after creation');
+    }
+    return this.transformTodo(todo);
   }
 
   /**
