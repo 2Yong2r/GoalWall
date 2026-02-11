@@ -63,28 +63,11 @@ export default function GoalDetailScreen() {
   // 页面聚焦时刷新数据
   useFocusEffect(
     useCallback(() => {
-      if (params.goalId) {
-        setLoading(true);
-        Promise.all([
-          localApiService.getGoal(params.goalId),
-          localApiService.getTasksByGoal(params.goalId),
-        ])
-          .then(([goalData, tasksData]) => {
-            if (goalData) {
-              setGoal(goalData);
-              setGoalName(goalData.name);
-              setGoalDescription(goalData.description || '');
-            }
-            setTasks(tasksData);
-          })
-          .catch((error) => {
-            console.error('Failed to fetch data:', error);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
+      if (params.goalId && !isCreateMode) {
+        fetchGoalDetail();
+        fetchTasks();
       }
-    }, [params.goalId])
+    }, [params.goalId, isCreateMode, fetchGoalDetail, fetchTasks])
   );
 
   // 开始编辑
@@ -150,7 +133,6 @@ export default function GoalDetailScreen() {
             try {
               await localApiService.deleteTask(taskId);
               setTasks(prev => prev.filter(t => t.id !== taskId));
-              Alert.alert('成功', '任务已删除，云端同步中...');
             } catch (error) {
               console.error('Failed to delete task:', error);
               Alert.alert('错误', '删除任务失败');
