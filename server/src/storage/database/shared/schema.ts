@@ -16,6 +16,9 @@ import { z } from "zod";
 // 优先级枚举
 export const priorityEnum = pgEnum("priority", ["high", "medium", "low"]);
 
+// 待办状态枚举
+export const todoStatusEnum = pgEnum("todo_status", ["pending", "completed"]);
+
 // 目标表
 export const goals = pgTable(
   "goals",
@@ -85,6 +88,32 @@ export const taskUpdates = pgTable(
   })
 );
 
+// 待办表
+export const todos = pgTable(
+  "todos",
+  {
+    id: varchar("id", { length: 36 })
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    title: varchar("title", { length: 255 }).notNull(),
+    description: text("description"),
+    dueDate: timestamp("due_date", { withTimezone: true, mode: 'date' }), // 到期日期
+    priority: priorityEnum("priority").notNull().default("medium"), // 优先级：high(高)、medium(中)、low(低)
+    status: todoStatusEnum("status").notNull().default("pending"), // 状态：pending(待办)、completed(已完成)
+    completedAt: timestamp("completed_at", { withTimezone: true, mode: 'date' }), // 完成时间
+    createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'date' }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'date' }), // 软删除时间
+  },
+  (table) => ({
+    dueDateIdx: index("todos_due_date_idx").on(table.dueDate),
+    statusIdx: index("todos_status_idx").on(table.status),
+    deletedAtIdx: index("todos_deleted_at_idx").on(table.deletedAt),
+  })
+);
+
 // 使用 createSchemaFactory 配置 date coercion
 const { createInsertSchema: createCoercedInsertSchema } = createSchemaFactory({
   coerce: { date: true },
@@ -135,6 +164,26 @@ export const insertTaskUpdateSchema = createCoercedInsertSchema(taskUpdates).pic
   completionPercentage: true,
 });
 
+// Todos Zod schemas
+export const insertTodoSchema = createCoercedInsertSchema(todos).pick({
+  title: true,
+  description: true,
+  dueDate: true,
+  priority: true,
+  status: true,
+});
+
+export const updateTodoSchema = createCoercedInsertSchema(todos)
+  .pick({
+    title: true,
+    description: true,
+    dueDate: true,
+    priority: true,
+    status: true,
+    completedAt: true,
+  })
+  .partial();
+
 // TypeScript types
 export type Goal = typeof goals.$inferSelect;
 export type InsertGoal = z.infer<typeof insertGoalSchema>;
@@ -146,3 +195,7 @@ export type UpdateTask = z.infer<typeof updateTaskSchema>;
 
 export type TaskUpdate = typeof taskUpdates.$inferSelect;
 export type InsertTaskUpdate = z.infer<typeof insertTaskUpdateSchema>;
+
+export type Todo = typeof todos.$inferSelect;
+export type InsertTodo = z.infer<typeof insertTodoSchema>;
+export type UpdateTodo = z.infer<typeof updateTodoSchema>;

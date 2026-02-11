@@ -1,0 +1,247 @@
+import React, { useState, useCallback } from 'react';
+import { View, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import { useSafeRouter, useSafeSearchParams } from '@/hooks/useSafeRouter';
+import { Screen } from '@/components/Screen';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { useTheme } from '@/hooks/useTheme';
+import { FontAwesome6 } from '@expo/vector-icons';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { createStyles } from './styles';
+import type { Todo } from '@/types';
+
+export default function TodoDetailScreen() {
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  const router = useSafeRouter();
+  const params = useSafeSearchParams<{ todoId?: string; mode?: 'create' }>();
+
+  const isCreateMode = params.mode === 'create';
+
+  // 表单数据
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // 获取待办详情
+  const fetchTodoDetail = useCallback(async () => {
+    if (!params.todoId || isCreateMode) return;
+
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos/${params.todoId}`);
+      const result = await response.json();
+      if (result.success) {
+        const todo = result.data as Todo;
+        setTitle(todo.title);
+        setDescription(todo.description || '');
+        setPriority((todo.priority as 'high' | 'medium' | 'low') || 'medium');
+        setDueDate(todo.dueDate ? new Date(todo.dueDate) : null);
+      }
+    } catch (error) {
+      console.error('Failed to fetch todo:', error);
+    }
+  }, [params.todoId, isCreateMode]);
+
+  fetchTodoDetail();
+
+  // 保存待办
+  const handleSave = async () => {
+    if (!title.trim()) {
+      alert('请输入待办标题');
+      return;
+    }
+
+    try {
+      const url = isCreateMode
+        ? `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos`
+        : `${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos/${params.todoId}`;
+      const method = isCreateMode ? 'POST' : 'PUT';
+
+      const body: any = {
+        title: title.trim(),
+        description: description.trim() || null,
+        priority: priority,
+      };
+
+      if (dueDate) {
+        body.dueDate = dueDate.toISOString();
+      }
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        router.back();
+      }
+    } catch (error) {
+      console.error('Failed to save todo:', error);
+    }
+  };
+
+  // 删除待办
+  const handleDelete = async () => {
+    if (!params.todoId || isCreateMode) {
+      router.back();
+      return;
+    }
+
+    if (!confirm('确定要删除这个待办吗？')) return;
+
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_BASE_URL}/api/v1/todos/${params.todoId}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (result.success) {
+        router.back();
+      }
+    } catch (error) {
+      console.error('Failed to delete todo:', error);
+    }
+  };
+
+  // 日期选择器处理
+  const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (event.type === 'set' && date) {
+      setDueDate(date);
+    }
+  };
+
+  // 优先级选择
+  const renderPriorityOption = (value: 'high' | 'medium' | 'low', label: string, color: string) => (
+    <TouchableOpacity
+      key={value}
+      style={[
+        styles.priorityOption,
+        priority === value && styles.priorityOptionSelected,
+        { borderColor: color },
+        priority === value && { backgroundColor: color },
+      ]}
+      onPress={() => setPriority(value)}
+    >
+      <ThemedText
+        variant="smallMedium"
+        color={priority === value ? '#FFFFFF' : theme.textPrimary}
+      >
+        {label}
+      </ThemedText>
+    </TouchableOpacity>
+  );
+
+  return (
+    <Screen backgroundColor={theme.backgroundRoot} statusBarStyle="dark">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* 标题输入 */}
+          <View style={styles.inputGroup}>
+            <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
+              标题 <ThemedText variant="caption" color={theme.textMuted}>*</ThemedText>
+            </ThemedText>
+            <TextInput
+              style={[styles.input, { borderColor: theme.border }]}
+              placeholder="请输入待办标题"
+              placeholderTextColor={theme.textMuted}
+              value={title}
+              onChangeText={setTitle}
+              autoFocus={isCreateMode}
+            />
+          </View>
+
+          {/* 描述输入 */}
+          <View style={styles.inputGroup}>
+            <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
+              描述
+            </ThemedText>
+            <TextInput
+              style={[styles.textArea, { borderColor: theme.border }]}
+              placeholder="请输入待办描述（可选）"
+              placeholderTextColor={theme.textMuted}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+
+          {/* 优先级选择 */}
+          <View style={styles.inputGroup}>
+            <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
+              优先级
+            </ThemedText>
+            <View style={styles.priorityContainer}>
+              {renderPriorityOption('high', '高优先级', '#F97316')}
+              {renderPriorityOption('medium', '中优先级', '#3B82F6')}
+              {renderPriorityOption('low', '低优先级', '#9CA3AF')}
+            </View>
+          </View>
+
+          {/* 截止日期 */}
+          <View style={styles.inputGroup}>
+            <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
+              截止日期
+            </ThemedText>
+            <TouchableOpacity
+              style={[styles.dateButton, { borderColor: theme.border }]}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <FontAwesome6 name="calendar" size={16} color={theme.textMuted} />
+              <ThemedText
+                variant="body"
+                color={dueDate ? theme.textPrimary : theme.textMuted}
+              >
+                {dueDate ? dueDate.toLocaleDateString() : '选择截止日期'}
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={dueDate || new Date()}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
+          )}
+
+          {/* 按钮组 */}
+          <View style={styles.buttonGroup}>
+            {!isCreateMode && (
+              <TouchableOpacity
+                style={[styles.button, styles.deleteButton]}
+                onPress={handleDelete}
+              >
+                <ThemedText variant="body" color="#EF4444">
+                  删除
+                </ThemedText>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={[styles.button, styles.saveButton, { backgroundColor: theme.primary }]}
+              onPress={handleSave}
+            >
+              <ThemedText variant="body" color={theme.buttonPrimaryText}>
+                保存
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Screen>
+  );
+}

@@ -26,3 +26,15 @@ export interface TaskUpdate {
   completionPercentage: number;
   createdAt: string;
 }
+
+export interface Todo {
+  id: string;
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'completed';
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+}

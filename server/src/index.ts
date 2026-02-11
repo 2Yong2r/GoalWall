@@ -3,6 +3,7 @@ import cors from "cors";
 import goalRouter from "./routes/goals";
 import taskRouter from "./routes/tasks";
 import versionRouter from "./routes/version";
+import todoRouter from "./routes/todos";
 
 const app = express();
 const port = process.env.PORT || 9091;
@@ -21,6 +22,7 @@ app.get('/api/v1/health', (req, res) => {
 // Routes
 app.use('/api/v1/goals', goalRouter);
 app.use('/api/v1/tasks', taskRouter);
+app.use('/api/v1/todos', todoRouter);
 app.use('/api/v1/version', versionRouter);
 
 app.listen(port, () => {

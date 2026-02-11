@@ -39,9 +39,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="tasks"
+        name="todos"
         options={{
-          title: '任务',
+          title: '待办',
           tabBarIcon: ({ color }) => (
             <FontAwesome6 name="list-check" size={20} color={color} />
           ),
