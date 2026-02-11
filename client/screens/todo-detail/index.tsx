@@ -202,11 +202,11 @@ export default function TodoDetailScreen() {
             />
           </View>
 
-          {/* 描述输入 */}
+          {/* 备注输入 */}
           <View style={styles.inputGroup}>
             <TextInput
               style={[styles.textArea, { borderColor: theme.border }]}
-              placeholder="描述（可选）"
+              placeholder="备注（可选）"
               placeholderTextColor={theme.textMuted}
               value={description}
               onChangeText={setDescription}
