@@ -101,6 +101,10 @@ export default function AllTasksScreen() {
       overshootRight={false}
       friction={2}
       rightThreshold={40}
+      onSwipeableClose={() => {
+        // 当 Swipeable 关闭时清理引用
+        swipeableRefs.current.delete(item.id);
+      }}
     >
       <TouchableOpacity
         style={styles.taskCard}
@@ -183,6 +187,8 @@ export default function AllTasksScreen() {
           renderItem={renderTaskItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.tasksList}
+          scrollEventThrottle={16}
+          removeClippedSubviews={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <FontAwesome6 name="clipboard-list" size={48} color={theme.textMuted} />

@@ -201,6 +201,9 @@ export default function HomeScreen() {
       overshootRight={false}
       friction={2}
       rightThreshold={40}
+      onSwipeableClose={() => {
+        swipeableRefs.current.delete(item.id);
+      }}
     >
       <ScaleDecorator>
         <TouchableOpacity
@@ -287,6 +290,8 @@ export default function HomeScreen() {
           onDragEnd={handleDragEnd}
           activationDistance={10}
           contentContainerStyle={styles.listContent}
+          scrollEventThrottle={16}
+          removeClippedSubviews={false}
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={fetchGoals} />
           }

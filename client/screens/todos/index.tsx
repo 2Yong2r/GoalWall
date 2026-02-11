@@ -150,6 +150,9 @@ export default function TodosScreen() {
       overshootRight={false}
       friction={2}
       rightThreshold={40}
+      onSwipeableClose={() => {
+        swipeableRefs.current.delete(item.id);
+      }}
     >
       <TouchableOpacity
         style={[
@@ -289,6 +292,8 @@ export default function TodosScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            scrollEventThrottle={16}
+            removeClippedSubviews={false}
           />
         )}
       </View>
