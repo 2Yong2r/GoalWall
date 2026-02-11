@@ -87,8 +87,8 @@ export default function TodoDetailScreen() {
       }
 
       if (isCreateMode) {
-        const newTodo = await localApiService.createTodo(todoData);
-        router.replace('/todo-detail', { todoId: newTodo.id });
+        await localApiService.createTodo(todoData);
+        router.replace('/todos');
       } else {
         await localApiService.updateTodo(params.todoId!, todoData);
         router.back();
@@ -169,6 +169,18 @@ export default function TodoDetailScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+      <View style={{ flex: 1 }}>
+        {/* 页首导航栏 */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <FontAwesome6 name="arrow-left" size={20} color={theme.textPrimary} />
+          </TouchableOpacity>
+          <ThemedText variant="h3" color={theme.textPrimary}>
+            {isCreateMode ? '创建待办' : '编辑待办'}
+          </ThemedText>
+          <View style={styles.headerRight} />
+        </View>
+
         <ScrollView
           style={styles.container}
           contentContainerStyle={styles.contentContainer}
@@ -268,12 +280,14 @@ export default function TodoDetailScreen() {
               onPress={handleSave}
             >
               <ThemedText variant="body" color={theme.buttonPrimaryText}>
-                保存
+                {isCreateMode ? '创建待办' : '保存'}
               </ThemedText>
             </TouchableOpacity>
           </View>
         </ScrollView>
+      </View>
       </KeyboardAvoidingView>
     </Screen>
   );
 }
+

@@ -3,6 +3,22 @@ import { Spacing, BorderRadius, Theme } from '@/constants/theme';
 
 export const createStyles = (theme: Theme) => {
   return StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      backgroundColor: theme.backgroundRoot,
+    },
+    backButton: {
+      padding: Spacing.sm,
+      marginRight: Spacing.md,
+    },
+    headerRight: {
+      flex: 1,
+    },
     container: {
       flex: 1,
     },
