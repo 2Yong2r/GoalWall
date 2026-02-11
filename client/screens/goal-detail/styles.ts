@@ -21,7 +21,7 @@ export const createStyles = (theme: Theme) => {
     editButton: {
       padding: Spacing.xs,
     },
-    // 创建模式表单
+    // 创建/编辑模式表单
     createForm: {
       flex: 1,
       paddingHorizontal: Spacing.xl,
@@ -57,9 +57,21 @@ export const createStyles = (theme: Theme) => {
       paddingVertical: Spacing.lg,
       borderRadius: BorderRadius.md,
       alignItems: 'center',
+      flex: 1,
     },
     fullWidthButton: {
       marginTop: Spacing.lg,
+    },
+    editButtonGroup: {
+      flexDirection: 'row',
+      gap: Spacing.md,
+      marginTop: Spacing.lg,
+    },
+    cancelEditButton: {
+      backgroundColor: theme.backgroundTertiary,
+    },
+    saveEditButton: {
+      backgroundColor: theme.primary,
     },
     // 详情模式
     detailContent: {
@@ -182,53 +194,6 @@ export const createStyles = (theme: Theme) => {
     emptyText: {
       marginTop: Spacing.md,
       textAlign: 'center',
-    },
-    // Modal
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'flex-end',
-    },
-    modalContainer: {
-      backgroundColor: theme.backgroundRoot,
-      borderTopLeftRadius: BorderRadius.xl,
-      borderTopRightRadius: BorderRadius.xl,
-    },
-    modalContent: {
-      paddingTop: Spacing.xl,
-      height: '70%',
-    },
-    modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: Spacing.lg,
-      paddingBottom: Spacing.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.border,
-    },
-    modalBody: {
-      flex: 1,
-      padding: Spacing.lg,
-    },
-    modalFooter: {
-      flexDirection: 'row',
-      padding: Spacing.lg,
-      borderTopWidth: 1,
-      borderTopColor: theme.border,
-      gap: Spacing.md,
-    },
-    modalButton: {
-      flex: 1,
-      paddingVertical: Spacing.lg,
-      borderRadius: BorderRadius.md,
-      alignItems: 'center',
-    },
-    cancelButton: {
-      backgroundColor: theme.backgroundTertiary,
-    },
-    modalSaveButton: {
-      backgroundColor: theme.primary,
     },
   });
 };

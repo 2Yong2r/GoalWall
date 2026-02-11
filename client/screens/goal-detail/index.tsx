@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, TouchableOpacity, FlatList, Modal, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable, Keyboard, Alert } from 'react-native';
+import { View, TouchableOpacity, FlatList, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable, Keyboard, Alert } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeRouter, useSafeSearchParams } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
@@ -19,11 +19,12 @@ export default function GoalDetailScreen() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [goalName, setGoalName] = useState('');
   const [goalDescription, setGoalDescription] = useState('');
 
   const isCreateMode = params.mode === 'create';
+  const isEditingOrCreating = isCreateMode || isEditMode;
 
   // 获取目标详情
   const fetchGoalDetail = useCallback(async () => {
@@ -68,6 +69,24 @@ export default function GoalDetailScreen() {
     }, [fetchGoalDetail, fetchTasks])
   );
 
+  // 开始编辑
+  const handleStartEdit = () => {
+    setIsEditMode(true);
+    if (goal) {
+      setGoalName(goal.name);
+      setGoalDescription(goal.description || '');
+    }
+  };
+
+  // 取消编辑
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    if (goal) {
+      setGoalName(goal.name);
+      setGoalDescription(goal.description || '');
+    }
+  };
+
   // 保存目标
   const handleSaveGoal = async () => {
     if (!goalName.trim()) {
@@ -96,7 +115,7 @@ export default function GoalDetailScreen() {
           router.replace('/goal-detail', { goalId: result.data.id });
         } else {
           setGoal(result.data);
-          setModalVisible(false);
+          setIsEditMode(false);
         }
       }
     } catch (error) {
@@ -209,182 +228,130 @@ export default function GoalDetailScreen() {
 
   return (
     <Screen backgroundColor={theme.backgroundRoot} statusBarStyle="dark">
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <FontAwesome6 name="arrow-left" size={20} color={theme.textPrimary} />
-          </TouchableOpacity>
-          <ThemedText variant="h3" color={theme.textPrimary}>
-            {isCreateMode ? '创建目标' : '目标详情'}
-          </ThemedText>
-          {!isCreateMode && (
-            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.editButton}>
-              <FontAwesome6 name="pen" size={18} color={theme.textPrimary} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* 创建模式：直接显示表单 */}
-        {isCreateMode ? (
-          <View style={styles.createForm}>
-            <ThemedView level="default" style={styles.formCard}>
-              <View style={styles.formGroup}>
-                <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-                  目标名称 *
-                </ThemedText>
-                <TextInput
-                  style={styles.input}
-                  value={goalName}
-                  onChangeText={setGoalName}
-                  placeholder="请输入目标名称"
-                  placeholderTextColor={theme.textMuted}
-                />
-              </View>
-
-              <View style={styles.formGroup}>
-                <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-                  目标描述
-                </ThemedText>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={goalDescription}
-                  onChangeText={setGoalDescription}
-                  placeholder="请输入目标描述（可选）"
-                  placeholderTextColor={theme.textMuted}
-                  multiline
-                  numberOfLines={4}
-                />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.saveButton, styles.fullWidthButton]}
-                onPress={handleSaveGoal}
-              >
-                <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>创建目标</ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
-          </View>
-        ) : (
-          /* 编辑/查看模式：显示目标信息和任务列表 */
-          <View style={styles.detailContent}>
-            {/* 目标信息 */}
-            <ThemedView level="default" style={styles.goalInfoCard}>
-              <View style={styles.goalHeader}>
-                <ThemedText variant="h4" color={theme.textPrimary} style={styles.goalName}>
-                  {goal?.name}
-                </ThemedText>
-              </View>
-              {goal?.description && (
-                <ThemedText variant="body" color={theme.textSecondary} style={styles.goalDescription}>
-                  {goal.description}
-                </ThemedText>
-              )}
-            </ThemedView>
-
-            {/* 任务列表 */}
-            <View style={styles.tasksSection}>
-              <View style={styles.tasksHeader}>
-                <ThemedText variant="h4" color={theme.textPrimary}>任务列表</ThemedText>
-                <TouchableOpacity onPress={handleAddTask} style={styles.addTaskButton}>
-                  <FontAwesome6 name="plus" size={16} color={theme.primary} />
-                </TouchableOpacity>
-              </View>
-
-              <FlatList
-                data={tasks}
-                renderItem={renderTaskItem}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.tasksList}
-                scrollEnabled={true}
-                ListEmptyComponent={
-                  <View style={styles.emptyContainer}>
-                    <FontAwesome6 name="clipboard-list" size={48} color={theme.textMuted} />
-                    <ThemedText variant="body" color={theme.textMuted} style={styles.emptyText}>
-                      还没有任务，点击右上角添加
-                    </ThemedText>
-                  </View>
-                }
-              />
-            </View>
-          </View>
-        )}
-      </View>
-
-      {/* 编辑目标 Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={Keyboard.dismiss}
-        >
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          >
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <ThemedText variant="h4" color={theme.textPrimary}>
-                    {isCreateMode ? '创建目标' : '编辑目标'}
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <FontAwesome6 name="arrow-left" size={20} color={theme.textPrimary} />
+            </TouchableOpacity>
+            <ThemedText variant="h3" color={theme.textPrimary}>
+              {isCreateMode ? '创建目标' : isEditMode ? '编辑目标' : '目标详情'}
+            </ThemedText>
+            {!isCreateMode && !isEditMode && (
+              <TouchableOpacity onPress={handleStartEdit} style={styles.editButton}>
+                <FontAwesome6 name="pen" size={18} color={theme.textPrimary} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* 创建/编辑模式：显示表单 */}
+          {isEditingOrCreating ? (
+            <View style={styles.createForm}>
+              <ThemedView level="default" style={styles.formCard}>
+                <View style={styles.formGroup}>
+                  <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
+                    目标名称 *
                   </ThemedText>
-                  <TouchableOpacity onPress={() => setModalVisible(false)}>
-                    <FontAwesome6 name="xmark" size={20} color={theme.textMuted} />
-                  </TouchableOpacity>
+                  <TextInput
+                    style={styles.input}
+                    value={goalName}
+                    onChangeText={setGoalName}
+                    placeholder="请输入目标名称"
+                    placeholderTextColor={theme.textMuted}
+                  />
                 </View>
 
-                <ScrollView style={styles.modalBody}>
-                  <View style={styles.formGroup}>
-                    <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-                      目标名称 *
-                    </ThemedText>
-                    <TextInput
-                      style={styles.input}
-                      value={goalName}
-                      onChangeText={setGoalName}
-                      placeholder="请输入目标名称"
-                      placeholderTextColor={theme.textMuted}
-                    />
-                  </View>
+                <View style={styles.formGroup}>
+                  <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
+                    目标描述
+                  </ThemedText>
+                  <TextInput
+                    style={[styles.input, styles.textArea]}
+                    value={goalDescription}
+                    onChangeText={setGoalDescription}
+                    placeholder="请输入目标描述（可选）"
+                    placeholderTextColor={theme.textMuted}
+                    multiline
+                    numberOfLines={4}
+                  />
+                </View>
 
-                  <View style={styles.formGroup}>
-                    <ThemedText variant="body" color={theme.textSecondary} style={styles.label}>
-                      目标描述
-                    </ThemedText>
-                    <TextInput
-                      style={[styles.input, styles.textArea]}
-                      value={goalDescription}
-                      onChangeText={setGoalDescription}
-                      placeholder="请输入目标描述"
-                      placeholderTextColor={theme.textMuted}
-                      multiline
-                      numberOfLines={4}
-                    />
-                  </View>
-                </ScrollView>
-
-                <View style={styles.modalFooter}>
+                {isCreateMode ? (
                   <TouchableOpacity
-                    style={[styles.modalButton, styles.cancelButton]}
-                    onPress={() => setModalVisible(false)}
-                  >
-                    <ThemedText variant="bodyMedium" color={theme.textSecondary}>取消</ThemedText>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.modalSaveButton]}
+                    style={[styles.saveButton, styles.fullWidthButton]}
                     onPress={handleSaveGoal}
                   >
-                    <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>保存</ThemedText>
+                    <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>创建目标</ThemedText>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.editButtonGroup}>
+                    <TouchableOpacity
+                      style={[styles.saveButton, styles.cancelEditButton]}
+                      onPress={handleCancelEdit}
+                    >
+                      <ThemedText variant="bodyMedium" color={theme.textSecondary}>取消</ThemedText>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.saveButton, styles.saveEditButton]}
+                      onPress={handleSaveGoal}
+                    >
+                      <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>保存</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </ThemedView>
+            </View>
+          ) : (
+            /* 查看模式：显示目标信息和任务列表 */
+            <View style={styles.detailContent}>
+              {/* 目标信息 */}
+              <ThemedView level="default" style={styles.goalInfoCard}>
+                <View style={styles.goalHeader}>
+                  <ThemedText variant="h4" color={theme.textPrimary} style={styles.goalName}>
+                    {goal?.name}
+                  </ThemedText>
+                </View>
+                {goal?.description && (
+                  <ThemedText variant="body" color={theme.textSecondary} style={styles.goalDescription}>
+                    {goal.description}
+                  </ThemedText>
+                )}
+              </ThemedView>
+
+              {/* 任务列表 */}
+              <View style={styles.tasksSection}>
+                <View style={styles.tasksHeader}>
+                  <ThemedText variant="h4" color={theme.textPrimary}>任务列表</ThemedText>
+                  <TouchableOpacity onPress={handleAddTask} style={styles.addTaskButton}>
+                    <FontAwesome6 name="plus" size={16} color={theme.primary} />
                   </TouchableOpacity>
                 </View>
+
+                <FlatList
+                  data={tasks}
+                  renderItem={renderTaskItem}
+                  keyExtractor={(item) => item.id}
+                  contentContainerStyle={styles.tasksList}
+                  scrollEnabled={true}
+                  ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                      <FontAwesome6 name="clipboard-list" size={48} color={theme.textMuted} />
+                      <ThemedText variant="body" color={theme.textMuted} style={styles.emptyText}>
+                        还没有任务，点击右上角添加
+                      </ThemedText>
+                    </View>
+                  }
+                />
               </View>
             </View>
-          </KeyboardAvoidingView>
-        </Pressable>
-      </Modal>
+          )}
+        </View>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }

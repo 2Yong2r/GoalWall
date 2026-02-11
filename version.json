@@ -1,12 +1,19 @@
 {
-  "version": "0.4.6",
-  "lastUpdated": "2026-02-11T12:50:00Z",
+  "version": "0.5.0",
+  "lastUpdated": "2026-02-11T13:00:00Z",
   "totalFiles": 61,
   "thresholds": {
     "minorVersionFiles": 5,
     "majorVersionFiles": 20
   },
   "history": [
+    {
+      "version": "0.5.0",
+      "releaseDate": "2026-02-11T13:00:00Z",
+      "description": "重构目标详情页面：将创建目标和编辑目标合并为统一的表单页面，删除编辑Modal，采用创建模式的交互风格",
+      "filesModified": 2,
+      "changeType": "minor"
+    },
     {
       "version": "0.4.6",
       "releaseDate": "2026-02-11T12:50:00Z",
