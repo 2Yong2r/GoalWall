@@ -118,9 +118,8 @@ export default function TodosScreen() {
     const completedAt = newStatus === 'completed' ? new Date().toISOString() : null;
     try {
       await localApiService.updateTodo(todoId, { status: newStatus, completedAt });
-      setTodos(prev => prev.map(t =>
-        t.id === todoId ? { ...t, status: newStatus, completedAt } : t
-      ));
+      // 重新获取并排序待办列表
+      await fetchTodos(viewMode);
     } catch (error) {
       console.error('Failed to toggle todo:', error);
     }
