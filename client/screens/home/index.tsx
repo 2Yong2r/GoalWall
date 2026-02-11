@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { View, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useFocusEffect } from 'expo-router';
@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { Swipeable } from 'react-native-gesture-handler';
 import { createStyles } from './styles';
 import type { Goal, Task } from '@/types';
 
@@ -27,6 +28,7 @@ export default function HomeScreen() {
   const [goalsWithStats, setGoalsWithStats] = useState<GoalWithStats[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
+  const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
   // 获取目标列表
   const fetchGoals = useCallback(async () => {
@@ -172,27 +174,50 @@ export default function HomeScreen() {
     }
   };
 
-  const renderGoalItem = ({ item, drag, isActive }: RenderItemParams<GoalWithStats>) => (
-    <ScaleDecorator>
+  // 渲染删除操作
+  const renderRightActions = (goalId: string) => {
+    return (
       <TouchableOpacity
-        style={[
-          styles.goalCard,
-          isActive && styles.goalCardActive,
-        ]}
-        onPress={() => router.push('/goal-detail', { goalId: item.id })}
-        onLongPress={drag}
+        style={styles.swipeDeleteButton}
+        onPress={() => {
+          swipeableRefs.current.get(goalId)?.close();
+          handleDeleteGoal(goalId);
+        }}
       >
-        <View style={styles.goalHeader}>
-          <View style={styles.goalTitleContainer}>
-            <TouchableOpacity onPressIn={drag} style={styles.dragHandle}>
-              <FontAwesome6 name="grip-lines" size={20} color={theme.textMuted} />
-            </TouchableOpacity>
-            <ThemedText variant="h4" color={theme.textPrimary}>{item.name}</ThemedText>
+        <FontAwesome6 name="trash" size={20} color="white" />
+        <ThemedText variant="caption" color="white">删除</ThemedText>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderGoalItem = ({ item, drag, isActive }: RenderItemParams<GoalWithStats>) => (
+    <Swipeable
+      ref={(ref) => {
+        if (ref) {
+          swipeableRefs.current.set(item.id, ref);
+        }
+      }}
+      renderRightActions={() => renderRightActions(item.id)}
+      overshootRight={false}
+    >
+      <ScaleDecorator>
+        <TouchableOpacity
+          style={[
+            styles.goalCard,
+            isActive && styles.goalCardActive,
+          ]}
+          onPress={() => router.push('/goal-detail', { goalId: item.id })}
+          onLongPress={drag}
+          activeOpacity={0.7}
+        >
+          <View style={styles.goalHeader}>
+            <View style={styles.goalTitleContainer}>
+              <TouchableOpacity onPressIn={drag} style={styles.dragHandle}>
+                <FontAwesome6 name="grip-lines" size={20} color={theme.textMuted} />
+              </TouchableOpacity>
+              <ThemedText variant="h4" color={theme.textPrimary}>{item.name}</ThemedText>
+            </View>
           </View>
-          <TouchableOpacity onPress={() => handleDeleteGoal(item.id)} style={styles.deleteButton}>
-            <FontAwesome6 name="trash" size={16} color={theme.error} />
-          </TouchableOpacity>
-        </View>
         {item.description && (
           <ThemedText variant="body" color={theme.textSecondary} style={styles.goalDescription}>
             {item.description}
@@ -237,6 +262,7 @@ export default function HomeScreen() {
         )}
       </TouchableOpacity>
     </ScaleDecorator>
+    </Swipeable>
   );
 
   return (

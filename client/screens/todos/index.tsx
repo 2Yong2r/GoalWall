@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, TouchableOpacity, FlatList, Alert, ScrollView } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeRouter } from '@/hooks/useSafeRouter';
@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { Swipeable } from 'react-native-gesture-handler';
 import { createStyles } from './styles';
 import type { Todo } from '@/types';
 
@@ -20,6 +21,7 @@ export default function TodosScreen() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('timeline');
+  const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
   // 获取待办列表
   const fetchTodos = useCallback(async () => {
@@ -120,72 +122,97 @@ export default function TodosScreen() {
     }
   };
 
+  // 渲染删除操作
+  const renderRightActions = (todoId: string) => {
+    return (
+      <TouchableOpacity
+        style={styles.swipeDeleteButton}
+        onPress={() => {
+          swipeableRefs.current.get(todoId)?.close();
+          handleDeleteTodo(todoId);
+        }}
+      >
+        <FontAwesome6 name="trash" size={20} color="white" />
+        <ThemedText variant="caption" color="white">删除</ThemedText>
+      </TouchableOpacity>
+    );
+  };
+
   // 渲染待办项
   const renderTodoItem = ({ item }: { item: Todo }) => (
-    <TouchableOpacity
-      style={[
-        styles.todoCard,
-        item.status === 'completed' && styles.todoCardCompleted
-      ]}
-      onPress={() => handleToggleTodo(item.id, item.status)}
+    <Swipeable
+      ref={(ref) => {
+        if (ref) {
+          swipeableRefs.current.set(item.id, ref);
+        }
+      }}
+      renderRightActions={() => renderRightActions(item.id)}
+      overshootRight={false}
     >
-      <View style={styles.todoMainContent}>
-        <TouchableOpacity
-          style={[
-            styles.checkbox,
-            item.status === 'completed' && styles.checkboxChecked
-          ]}
-          onPress={() => handleToggleTodo(item.id, item.status)}
-        >
-          {item.status === 'completed' && (
-            <FontAwesome6 name="check" size={14} color="white" />
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.todoContent}>
-          <ThemedText
-            variant="body"
-            color={item.status === 'completed' ? theme.textMuted : theme.textPrimary}
+      <TouchableOpacity
+        style={[
+          styles.todoCard,
+          item.status === 'completed' && styles.todoCardCompleted
+        ]}
+        onPress={() => router.push('/todo-detail', { todoId: item.id })}
+        activeOpacity={0.7}
+      >
+        <View style={styles.todoMainContent}>
+          <TouchableOpacity
             style={[
-              styles.todoTitle,
-              item.status === 'completed' && styles.todoTitleCompleted
+              styles.checkbox,
+              item.status === 'completed' && styles.checkboxChecked
             ]}
+            onPress={() => handleToggleTodo(item.id, item.status)}
+            activeOpacity={0.7}
           >
-            {item.title}
-          </ThemedText>
-          {item.description && (
+            {item.status === 'completed' && (
+              <FontAwesome6 name="check" size={14} color="white" />
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.todoContent}>
             <ThemedText
-              variant="caption"
-              color={theme.textMuted}
-              style={styles.todoDescription}
-              numberOfLines={2}
+              variant="body"
+              color={item.status === 'completed' ? theme.textMuted : theme.textPrimary}
+              style={[
+                styles.todoTitle,
+                item.status === 'completed' && styles.todoTitleCompleted
+              ]}
             >
-              {item.description}
+              {item.title}
             </ThemedText>
-          )}
+            {item.description && (
+              <ThemedText
+                variant="caption"
+                color={theme.textMuted}
+                style={styles.todoDescription}
+                numberOfLines={2}
+              >
+                {item.description}
+              </ThemedText>
+            )}
+          </View>
+
+          <View style={styles.todoRightContent}>
+            <View style={[styles.priorityTag, getPriorityStyle(item.priority)]}>
+              <ThemedText variant="caption" color="#FFFFFF">
+                {getPriorityText(item.priority)}
+              </ThemedText>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.todoRightContent}>
-          <View style={[styles.priorityTag, getPriorityStyle(item.priority)]}>
-            <ThemedText variant="caption" color="#FFFFFF">
-              {getPriorityText(item.priority)}
+        {item.dueDate && (
+          <View style={styles.todoDueDate}>
+            <FontAwesome6 name="calendar" size={12} color={theme.textMuted} />
+            <ThemedText variant="caption" color={theme.textMuted}>
+              {new Date(item.dueDate).toLocaleDateString()}
             </ThemedText>
           </View>
-          <TouchableOpacity onPress={() => handleDeleteTodo(item.id)} style={styles.deleteButton}>
-            <FontAwesome6 name="trash" size={14} color={theme.textMuted} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {item.dueDate && (
-        <View style={styles.todoDueDate}>
-          <FontAwesome6 name="calendar" size={12} color={theme.textMuted} />
-          <ThemedText variant="caption" color={theme.textMuted}>
-            {new Date(item.dueDate).toLocaleDateString()}
-          </ThemedText>
-        </View>
-      )}
-    </TouchableOpacity>
+        )}
+      </TouchableOpacity>
+    </Swipeable>
   );
 
   // 渲染视图模式切换按钮

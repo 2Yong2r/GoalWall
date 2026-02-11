@@ -66,10 +66,6 @@ export const createStyles = (theme: Theme) => {
       borderRadius: BorderRadius.xs,
       alignSelf: 'flex-start',
     },
-    deleteButton: {
-      padding: Spacing.xs,
-      marginLeft: Spacing.xs,
-    },
     taskFooter: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -91,6 +87,15 @@ export const createStyles = (theme: Theme) => {
       marginTop: Spacing.xs,
       flexDirection: 'row',
       justifyContent: 'space-between',
+    },
+    swipeDeleteButton: {
+      backgroundColor: '#EF4444',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.xl,
+      width: 80,
+      gap: Spacing.xs,
+      marginBottom: Spacing.xs,
     },
     emptyContainer: {
       alignItems: 'center',

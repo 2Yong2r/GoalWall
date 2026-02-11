@@ -98,8 +98,14 @@ export const createStyles = (theme: Theme) => {
     dateRangeText: {
       marginLeft: Spacing.xs,
     },
-    deleteButton: {
-      padding: Spacing.xs,
+    swipeDeleteButton: {
+      backgroundColor: '#EF4444',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.xl,
+      width: 80,
+      gap: Spacing.xs,
+      marginBottom: Spacing.md,
     },
     emptyContainer: {
       flex: 1,

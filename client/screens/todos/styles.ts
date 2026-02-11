@@ -124,5 +124,13 @@ export const createStyles = (theme: Theme) => {
       borderTopWidth: 1,
       borderTopColor: theme.borderLight,
     },
+    swipeDeleteButton: {
+      backgroundColor: '#EF4444',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.xl,
+      width: 80,
+      gap: Spacing.xs,
+    },
   });
 };

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeRouter } from '@/hooks/useSafeRouter';
@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { Swipeable } from 'react-native-gesture-handler';
 import { createStyles } from './styles';
 import type { Task } from '@/types';
 
@@ -17,6 +18,7 @@ export default function AllTasksScreen() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
+  const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
   // 获取所有任务
   const fetchAllTasks = useCallback(async () => {
@@ -72,42 +74,65 @@ export default function AllTasksScreen() {
     );
   };
 
-  const renderTaskItem = ({ item }: { item: Task }) => (
-    <TouchableOpacity
-      style={styles.taskCard}
-      onPress={() => router.push('/task-detail', { taskId: item.id })}
-    >
-      {/* 主要内容：描述 */}
-      <View style={styles.taskMainContent}>
-        <ThemedText variant="body" color={theme.textPrimary} style={styles.taskDescription}>
-          {item.description}
-        </ThemedText>
-        <TouchableOpacity onPress={() => handleDeleteTask(item.id)} style={styles.deleteButton}>
-          <FontAwesome6 name="trash" size={16} color={theme.textMuted} />
-        </TouchableOpacity>
-      </View>
+  // 渲染删除操作
+  const renderRightActions = (taskId: string) => {
+    return (
+      <TouchableOpacity
+        style={styles.swipeDeleteButton}
+        onPress={() => {
+          swipeableRefs.current.get(taskId)?.close();
+          handleDeleteTask(taskId);
+        }}
+      >
+        <FontAwesome6 name="trash" size={20} color="white" />
+        <ThemedText variant="caption" color="white">删除</ThemedText>
+      </TouchableOpacity>
+    );
+  };
 
-      {/* 属性标签：优先级和目标 */}
-      <View style={styles.taskAttributes}>
-        <View style={[
-          styles.priorityTag,
-          item.priority === 'high' && { backgroundColor: '#F97316' },
-          item.priority === 'medium' && { backgroundColor: '#3B82F6' },
-          item.priority === 'low' && { backgroundColor: '#9CA3AF' },
-        ]}>
-          <ThemedText variant="caption" color="#FFFFFF">
-            {item.priority === 'high' ? '高优先级' : item.priority === 'medium' ? '中优先级' : '低优先级'}
+  const renderTaskItem = ({ item }: { item: Task }) => (
+    <Swipeable
+      ref={(ref) => {
+        if (ref) {
+          swipeableRefs.current.set(item.id, ref);
+        }
+      }}
+      renderRightActions={() => renderRightActions(item.id)}
+      overshootRight={false}
+    >
+      <TouchableOpacity
+        style={styles.taskCard}
+        onPress={() => router.push('/task-detail', { taskId: item.id })}
+        activeOpacity={0.7}
+      >
+        {/* 主要内容：描述 */}
+        <View style={styles.taskMainContent}>
+          <ThemedText variant="body" color={theme.textPrimary} style={styles.taskDescription}>
+            {item.description}
           </ThemedText>
         </View>
-        {item.goalId && (
-          <View style={styles.goalTag}>
-            <FontAwesome6 name="flag" size={12} color={theme.primary} />
-            <ThemedText variant="caption" color={theme.primary}>
-              关联目标
+
+        {/* 属性标签：优先级和目标 */}
+        <View style={styles.taskAttributes}>
+          <View style={[
+            styles.priorityTag,
+            item.priority === 'high' && { backgroundColor: '#F97316' },
+            item.priority === 'medium' && { backgroundColor: '#3B82F6' },
+            item.priority === 'low' && { backgroundColor: '#9CA3AF' },
+          ]}>
+            <ThemedText variant="caption" color="#FFFFFF">
+              {item.priority === 'high' ? '高优先级' : item.priority === 'medium' ? '中优先级' : '低优先级'}
             </ThemedText>
           </View>
-        )}
-      </View>
+          {item.goalId && (
+            <View style={styles.goalTag}>
+              <FontAwesome6 name="flag" size={12} color={theme.primary} />
+              <ThemedText variant="caption" color={theme.primary}>
+                关联目标
+              </ThemedText>
+            </View>
+          )}
+        </View>
 
       {/* 进度条 */}
       <View style={styles.taskFooter}>
@@ -135,6 +160,7 @@ export default function AllTasksScreen() {
         </View>
       )}
     </TouchableOpacity>
+    </Swipeable>
   );
 
   return (
