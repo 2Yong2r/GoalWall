@@ -105,9 +105,9 @@ export const createStyles = (theme: Theme) => {
       gap: Spacing.md,
     },
     checkbox: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
+      width: 22,
+      height: 22,
+      borderRadius: 4,
       borderWidth: 2,
       borderColor: theme.border,
       justifyContent: 'center',
@@ -120,45 +120,25 @@ export const createStyles = (theme: Theme) => {
     todoContent: {
       flex: 1,
     },
+    todoTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: Spacing.sm,
+    },
     todoTitle: {
+      flex: 1,
       fontSize: 16,
       fontWeight: '600',
     },
     todoTitleCompleted: {
       textDecorationLine: 'line-through',
     },
+    todoDateInline: {
+      fontSize: 12,
+    },
     todoDescription: {
       marginTop: Spacing.xs,
-    },
-    todoRightContent: {
-      alignItems: 'flex-end',
-      gap: Spacing.xs,
-    },
-    priorityTag: {
-      paddingHorizontal: Spacing.sm,
-      paddingVertical: 2,
-      borderRadius: BorderRadius.sm,
-    },
-    priorityHigh: {
-      backgroundColor: '#F97316',
-    },
-    priorityMedium: {
-      backgroundColor: '#3B82F6',
-    },
-    priorityLow: {
-      backgroundColor: '#9CA3AF',
-    },
-    deleteButton: {
-      padding: Spacing.xs,
-    },
-    todoDueDate: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: Spacing.xs,
-      marginLeft: 36,
-      paddingTop: Spacing.xs,
-      borderTopWidth: 1,
-      borderTopColor: theme.borderLight,
     },
     swipeDeleteButton: {
       backgroundColor: '#EF4444',
