@@ -25,11 +25,32 @@ export default function TodosScreen() {
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
   // 获取待办列表（使用本地 API）
-  const fetchTodos = useCallback(async () => {
+  const fetchTodos = useCallback(async (mode: ViewMode = 'timeline') => {
     setLoading(true);
     try {
       const data = await localApiService.getTodos();
-      setTodos(data);
+
+      // 根据视图模式排序
+      let sortedData = data;
+
+      if (mode === 'timeline') {
+        // 时间轴模式：有截止日期的按日期升序，无截止日期的排最后按标题排序
+        const withDueDate = data.filter(t => t.dueDate);
+        const withoutDueDate = data.filter(t => !t.dueDate);
+
+        // 有截止日期的按日期升序排列（由近到远）
+        withDueDate.sort((a, b) => {
+          if (!a.dueDate || !b.dueDate) return 0;
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        });
+
+        // 无截止日期的按标题拼音排序
+        withoutDueDate.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'));
+
+        sortedData = [...withDueDate, ...withoutDueDate];
+      }
+
+      setTodos(sortedData);
     } catch (error) {
       console.error('Failed to fetch todos:', error);
     } finally {
@@ -40,8 +61,8 @@ export default function TodosScreen() {
   // 页面聚焦或视图模式切换时刷新数据
   useFocusEffect(
     useCallback(() => {
-      fetchTodos();
-    }, [fetchTodos])
+      fetchTodos(viewMode);
+    }, [fetchTodos, viewMode])
   );
 
   // 切换待办状态（使用本地 API）
