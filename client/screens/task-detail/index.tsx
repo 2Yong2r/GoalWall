@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { createStyles } from './styles';
 import type { Task, TaskUpdate } from '@/types';
 
@@ -24,7 +24,6 @@ export default function TaskDetailScreen() {
   const [loading, setLoading] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [showActualCompletionDatePicker, setShowActualCompletionDatePicker] = useState(false);
 
   // 表单数据
   const [description, setDescription] = useState('');
@@ -157,14 +156,22 @@ export default function TaskDetailScreen() {
   };
 
   // 日期选择器处理
-  const handleStartDateChange = (event: any, date?: Date) => {
-    setShowStartDatePicker(Platform.OS === 'ios');
-    if (date) setStartDate(date);
+  const handleStartDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowStartDatePicker(false);
+    }
+    if (event.type === 'set' && date) {
+      setStartDate(date);
+    }
   };
 
-  const handleEndDateChange = (event: any, date?: Date) => {
-    setShowEndDatePicker(Platform.OS === 'ios');
-    if (date) setEndDate(date);
+  const handleEndDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowEndDatePicker(false);
+    }
+    if (event.type === 'set' && date) {
+      setEndDate(date);
+    }
   };
 
   const renderUpdateItem = ({ item }: { item: TaskUpdate }) => (
@@ -263,11 +270,42 @@ export default function TaskDetailScreen() {
                   </ThemedText>
                 </TouchableOpacity>
                 {showStartDatePicker && (
-                  <DateTimePicker
-                    value={startDate || new Date()}
-                    mode="date"
-                    onChange={handleStartDateChange}
-                  />
+                  Platform.OS === 'ios' ? (
+                    <Modal
+                      transparent={true}
+                      visible={showStartDatePicker}
+                      animationType="slide"
+                    >
+                      <View style={styles.datePickerModal}>
+                        <View style={styles.datePickerModalContent}>
+                          <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowStartDatePicker(false)}
+                          >
+                            <ThemedText variant="bodyMedium" color={theme.primary}>取消</ThemedText>
+                          </TouchableOpacity>
+                          <DateTimePicker
+                            value={startDate || new Date()}
+                            mode="date"
+                            onChange={handleStartDateChange}
+                            style={{ width: '100%' }}
+                          />
+                          <TouchableOpacity
+                            style={[styles.datePickerButton, styles.datePickerConfirmButton]}
+                            onPress={() => setShowStartDatePicker(false)}
+                          >
+                            <ThemedText variant="bodyMedium" color={theme.primary}>确认</ThemedText>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </Modal>
+                  ) : (
+                    <DateTimePicker
+                      value={startDate || new Date()}
+                      mode="date"
+                      onChange={handleStartDateChange}
+                    />
+                  )
                 )}
               </View>
 
@@ -285,11 +323,42 @@ export default function TaskDetailScreen() {
                   </ThemedText>
                 </TouchableOpacity>
                 {showEndDatePicker && (
-                  <DateTimePicker
-                    value={endDate || new Date()}
-                    mode="date"
-                    onChange={handleEndDateChange}
-                  />
+                  Platform.OS === 'ios' ? (
+                    <Modal
+                      transparent={true}
+                      visible={showEndDatePicker}
+                      animationType="slide"
+                    >
+                      <View style={styles.datePickerModal}>
+                        <View style={styles.datePickerModalContent}>
+                          <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowEndDatePicker(false)}
+                          >
+                            <ThemedText variant="bodyMedium" color={theme.primary}>取消</ThemedText>
+                          </TouchableOpacity>
+                          <DateTimePicker
+                            value={endDate || new Date()}
+                            mode="date"
+                            onChange={handleEndDateChange}
+                            style={{ width: '100%' }}
+                          />
+                          <TouchableOpacity
+                            style={[styles.datePickerButton, styles.datePickerConfirmButton]}
+                            onPress={() => setShowEndDatePicker(false)}
+                          >
+                            <ThemedText variant="bodyMedium" color={theme.primary}>确认</ThemedText>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </Modal>
+                  ) : (
+                    <DateTimePicker
+                      value={endDate || new Date()}
+                      mode="date"
+                      onChange={handleEndDateChange}
+                    />
+                  )
                 )}
               </View>
 

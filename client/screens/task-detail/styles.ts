@@ -120,5 +120,24 @@ export const createStyles = (theme: Theme) => {
       shadowRadius: 4,
       elevation: 4,
     },
+    datePickerModal: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    datePickerModalContent: {
+      backgroundColor: theme.backgroundRoot,
+      borderTopLeftRadius: BorderRadius.xl,
+      borderTopRightRadius: BorderRadius.xl,
+      paddingVertical: Spacing.lg,
+    },
+    datePickerButton: {
+      padding: Spacing.md,
+      alignItems: 'center',
+    },
+    datePickerConfirmButton: {
+      borderTopWidth: 1,
+      borderTopColor: theme.border,
+    },
   });
 };
