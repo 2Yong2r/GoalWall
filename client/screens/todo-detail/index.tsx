@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { RepeatConfigInput, type RepeatConfig } from '@/components/RepeatConfigInput';
 import { createStyles } from './styles';
 import type { Todo } from '@/types';
 
@@ -24,6 +25,12 @@ export default function TodoDetailScreen() {
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [repeatConfig, setRepeatConfig] = useState<RepeatConfig>({
+    isRepeat: false,
+    repeatInterval: 1,
+    repeatUnit: 'day',
+    repeatEndDate: null,
+  });
 
   // 获取待办详情
   const fetchTodoDetail = useCallback(async () => {
@@ -38,6 +45,13 @@ export default function TodoDetailScreen() {
         setDescription(todo.description || '');
         setPriority((todo.priority as 'high' | 'medium' | 'low') || 'medium');
         setDueDate(todo.dueDate ? new Date(todo.dueDate) : null);
+        // 加载重复配置
+        setRepeatConfig({
+          isRepeat: todo.isRepeat || false,
+          repeatInterval: todo.repeatInterval || 1,
+          repeatUnit: todo.repeatUnit || 'day',
+          repeatEndDate: todo.repeatEndDate ? new Date(todo.repeatEndDate) : null,
+        });
       }
     } catch (error) {
       console.error('Failed to fetch todo:', error);
@@ -72,7 +86,13 @@ export default function TodoDetailScreen() {
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          ...body,
+          isRepeat: repeatConfig.isRepeat,
+          repeatInterval: repeatConfig.repeatInterval,
+          repeatUnit: repeatConfig.repeatUnit,
+          repeatEndDate: repeatConfig.repeatEndDate ? repeatConfig.repeatEndDate.toISOString() : null,
+        }),
       });
 
       const result = await response.json();
@@ -218,6 +238,12 @@ export default function TodoDetailScreen() {
               onChange={handleDateChange}
             />
           )}
+
+          {/* 重复设置 */}
+          <RepeatConfigInput
+            value={repeatConfig}
+            onChange={setRepeatConfig}
+          />
 
           {/* 按钮组 */}
           <View style={styles.buttonGroup}>

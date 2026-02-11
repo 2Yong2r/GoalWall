@@ -15,6 +15,10 @@ export interface Task {
   endDate: string | null;
   completionPercentage: number;
   actualCompletionDate: string | null;
+  isRepeat: boolean;
+  repeatInterval: number;
+  repeatUnit: 'day' | 'week' | 'month' | 'year';
+  repeatEndDate: string | null;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -35,6 +39,10 @@ export interface Todo {
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'completed';
   completedAt: string | null;
+  isRepeat: boolean;
+  repeatInterval: number;
+  repeatUnit: 'day' | 'week' | 'month' | 'year';
+  repeatEndDate: string | null;
   createdAt: string;
   updatedAt: string | null;
 }

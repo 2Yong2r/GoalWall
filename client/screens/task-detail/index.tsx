@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { FontAwesome6 } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { RepeatConfigInput, type RepeatConfig } from '@/components/RepeatConfigInput';
 import { createStyles } from './styles';
 import type { Task, TaskUpdate } from '@/types';
 
@@ -31,6 +32,12 @@ export default function TaskDetailScreen() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [completionPercentage, setCompletionPercentage] = useState('0');
+  const [repeatConfig, setRepeatConfig] = useState<RepeatConfig>({
+    isRepeat: false,
+    repeatInterval: 1,
+    repeatUnit: 'day',
+    repeatEndDate: null,
+  });
 
   // 获取任务详情
   const fetchTaskDetail = useCallback(async () => {
@@ -47,6 +54,13 @@ export default function TaskDetailScreen() {
         setCompletionPercentage(String(result.data.completionPercentage));
         setStartDate(result.data.startDate ? new Date(result.data.startDate) : null);
         setEndDate(result.data.endDate ? new Date(result.data.endDate) : null);
+        // 加载重复配置
+        setRepeatConfig({
+          isRepeat: result.data.isRepeat || false,
+          repeatInterval: result.data.repeatInterval || 1,
+          repeatUnit: result.data.repeatUnit || 'day',
+          repeatEndDate: result.data.repeatEndDate ? new Date(result.data.repeatEndDate) : null,
+        });
       }
     } catch (error) {
       console.error('Failed to fetch task:', error);
@@ -111,7 +125,13 @@ export default function TaskDetailScreen() {
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          ...body,
+          isRepeat: repeatConfig.isRepeat,
+          repeatInterval: repeatConfig.repeatInterval,
+          repeatUnit: repeatConfig.repeatUnit,
+          repeatEndDate: repeatConfig.repeatEndDate ? repeatConfig.repeatEndDate.toISOString() : null,
+        }),
       });
 
       const result = await response.json();
@@ -404,6 +424,12 @@ export default function TaskDetailScreen() {
                   ))}
                 </View>
               </View>
+
+              {/* 重复设置 */}
+              <RepeatConfigInput
+                value={repeatConfig}
+                onChange={setRepeatConfig}
+              />
             </ThemedView>
 
             {/* 保存按钮 */}

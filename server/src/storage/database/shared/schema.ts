@@ -19,6 +19,9 @@ export const priorityEnum = pgEnum("priority", ["high", "medium", "low"]);
 // 待办状态枚举
 export const todoStatusEnum = pgEnum("todo_status", ["pending", "completed"]);
 
+// 重复单位枚举
+export const repeatUnitEnum = pgEnum("repeat_unit", ["day", "week", "month", "year"]);
+
 // 目标表
 export const goals = pgTable(
   "goals",
@@ -56,6 +59,10 @@ export const tasks = pgTable(
     endDate: timestamp("end_date", { withTimezone: true, mode: 'date' }), // 结束日期
     completionPercentage: integer("completion_percentage").default(0).notNull(), // 完成百分比 (0-100)
     actualCompletionDate: timestamp("actual_completion_date", { withTimezone: true, mode: 'date' }), // 实际完成日期
+    isRepeat: boolean("is_repeat").default(false).notNull(), // 是否重复
+    repeatInterval: integer("repeat_interval").default(1).notNull(), // 重复间隔（每 X 天/周/月/年）
+    repeatUnit: repeatUnitEnum("repeat_unit"), // 重复单位：day(天)、week(周)、month(月)、year(年)
+    repeatEndDate: timestamp("repeat_end_date", { withTimezone: true, mode: 'date' }), // 重复结束日期（null 表示永不结束）
     deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'date' }), // 软删除时间
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' })
       .defaultNow()
@@ -101,6 +108,10 @@ export const todos = pgTable(
     priority: priorityEnum("priority").notNull().default("medium"), // 优先级：high(高)、medium(中)、low(低)
     status: todoStatusEnum("status").notNull().default("pending"), // 状态：pending(待办)、completed(已完成)
     completedAt: timestamp("completed_at", { withTimezone: true, mode: 'date' }), // 完成时间
+    isRepeat: boolean("is_repeat").default(false).notNull(), // 是否重复
+    repeatInterval: integer("repeat_interval").default(1).notNull(), // 重复间隔（每 X 天/周/月/年）
+    repeatUnit: repeatUnitEnum("repeat_unit"), // 重复单位：day(天)、week(周)、month(月)、year(年)
+    repeatEndDate: timestamp("repeat_end_date", { withTimezone: true, mode: 'date' }), // 重复结束日期（null 表示永不结束）
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull(),
@@ -143,6 +154,10 @@ export const insertTaskSchema = createCoercedInsertSchema(tasks).pick({
   endDate: true,
   completionPercentage: true,
   actualCompletionDate: true,
+  isRepeat: true,
+  repeatInterval: true,
+  repeatUnit: true,
+  repeatEndDate: true,
 });
 
 export const updateTaskSchema = createCoercedInsertSchema(tasks)
@@ -154,6 +169,10 @@ export const updateTaskSchema = createCoercedInsertSchema(tasks)
     endDate: true,
     completionPercentage: true,
     actualCompletionDate: true,
+    isRepeat: true,
+    repeatInterval: true,
+    repeatUnit: true,
+    repeatEndDate: true,
   })
   .partial();
 
@@ -171,6 +190,11 @@ export const insertTodoSchema = createCoercedInsertSchema(todos).pick({
   dueDate: true,
   priority: true,
   status: true,
+  completedAt: true,
+  isRepeat: true,
+  repeatInterval: true,
+  repeatUnit: true,
+  repeatEndDate: true,
 });
 
 export const updateTodoSchema = createCoercedInsertSchema(todos)
@@ -181,6 +205,10 @@ export const updateTodoSchema = createCoercedInsertSchema(todos)
     priority: true,
     status: true,
     completedAt: true,
+    isRepeat: true,
+    repeatInterval: true,
+    repeatUnit: true,
+    repeatEndDate: true,
   })
   .partial();
 
