@@ -30,33 +30,46 @@ export const createStyles = (theme: Theme) => {
     taskCard: {
       backgroundColor: theme.backgroundDefault,
       borderRadius: BorderRadius.md,
-      padding: Spacing.sm,
+      padding: Spacing.md,
       marginBottom: Spacing.xs,
     },
-    taskHeader: {
+    taskMainContent: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
       marginBottom: Spacing.xs,
     },
-    taskLeft: {
+    taskDescription: {
       flex: 1,
-      marginRight: Spacing.xs,
+      fontSize: 16,
+      lineHeight: 22,
+      marginRight: Spacing.sm,
     },
-    weightBadge: {
-      backgroundColor: theme.primary,
-      paddingHorizontal: 6,
+    taskAttributes: {
+      flexDirection: 'row',
+      gap: Spacing.xs,
+      marginBottom: Spacing.xs,
+    },
+    weightTag: {
+      backgroundColor: `${theme.primary}15`,
+      paddingHorizontal: Spacing.xs,
       paddingVertical: 2,
       borderRadius: BorderRadius.xs,
       alignSelf: 'flex-start',
-      marginBottom: 2,
     },
-    taskDescription: {
-      fontSize: 14,
-      lineHeight: 20,
+    goalTag: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: `${theme.primary}15`,
+      paddingHorizontal: Spacing.xs,
+      paddingVertical: 2,
+      borderRadius: BorderRadius.xs,
+      alignSelf: 'flex-start',
     },
     deleteButton: {
-      padding: 4,
+      padding: Spacing.xs,
+      marginLeft: Spacing.xs,
     },
     taskFooter: {
       flexDirection: 'row',
@@ -79,12 +92,6 @@ export const createStyles = (theme: Theme) => {
       marginTop: Spacing.xs,
       flexDirection: 'row',
       justifyContent: 'space-between',
-    },
-    goalTag: {
-      marginTop: Spacing.xs,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: Spacing.xs,
     },
     emptyContainer: {
       alignItems: 'center',

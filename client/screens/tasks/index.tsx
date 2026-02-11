@@ -61,20 +61,32 @@ export default function AllTasksScreen() {
       style={styles.taskCard}
       onPress={() => router.push('/task-detail', { taskId: item.id })}
     >
-      <View style={styles.taskHeader}>
-        <View style={styles.taskLeft}>
-          <View style={styles.weightBadge}>
-            <ThemedText variant="caption" color={theme.buttonPrimaryText}>权重 {item.weight}</ThemedText>
-          </View>
-          <ThemedText variant="body" color={theme.textPrimary} style={styles.taskDescription}>
-            {item.description}
-          </ThemedText>
-        </View>
+      {/* 主要内容：描述 */}
+      <View style={styles.taskMainContent}>
+        <ThemedText variant="body" color={theme.textPrimary} style={styles.taskDescription}>
+          {item.description}
+        </ThemedText>
         <TouchableOpacity onPress={() => handleDeleteTask(item.id)} style={styles.deleteButton}>
           <FontAwesome6 name="trash" size={16} color={theme.textMuted} />
         </TouchableOpacity>
       </View>
 
+      {/* 属性标签：权重和目标 */}
+      <View style={styles.taskAttributes}>
+        <View style={styles.weightTag}>
+          <ThemedText variant="caption" color={theme.primary}>权重 {item.weight}</ThemedText>
+        </View>
+        {item.goalId && (
+          <View style={styles.goalTag}>
+            <FontAwesome6 name="flag" size={12} color={theme.primary} />
+            <ThemedText variant="caption" color={theme.primary}>
+              关联目标
+            </ThemedText>
+          </View>
+        )}
+      </View>
+
+      {/* 进度条 */}
       <View style={styles.taskFooter}>
         <View style={styles.progressBarContainer}>
           <View style={[styles.progressBar, { width: `${item.completionPercentage}%` }]} />
@@ -84,6 +96,7 @@ export default function AllTasksScreen() {
         </ThemedText>
       </View>
 
+      {/* 日期信息 */}
       {(item.startDate || item.endDate) && (
         <View style={styles.dateInfo}>
           {item.startDate && (
@@ -96,15 +109,6 @@ export default function AllTasksScreen() {
               结束: {new Date(item.endDate).toLocaleDateString()}
             </ThemedText>
           )}
-        </View>
-      )}
-
-      {item.goalId && (
-        <View style={styles.goalTag}>
-          <FontAwesome6 name="flag" size={12} color={theme.primary} />
-          <ThemedText variant="caption" color={theme.primary}>
-            关联目标
-          </ThemedText>
         </View>
       )}
     </TouchableOpacity>

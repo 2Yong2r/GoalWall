@@ -129,20 +129,24 @@ export default function GoalDetailScreen() {
       style={styles.taskCard}
       onPress={() => router.push('/task-detail', { taskId: item.id })}
     >
-      <View style={styles.taskHeader}>
-        <View style={styles.taskLeft}>
-          <View style={styles.weightBadge}>
-            <ThemedText variant="caption" color={theme.buttonPrimaryText}>权重 {item.weight}</ThemedText>
-          </View>
-          <ThemedText variant="body" color={theme.textPrimary} style={styles.taskDescription}>
-            {item.description}
-          </ThemedText>
-        </View>
+      {/* 主要内容：描述 */}
+      <View style={styles.taskMainContent}>
+        <ThemedText variant="body" color={theme.textPrimary} style={styles.taskDescription}>
+          {item.description}
+        </ThemedText>
         <TouchableOpacity onPress={() => handleDeleteTask(item.id)} style={styles.deleteButton}>
           <FontAwesome6 name="trash" size={16} color={theme.textMuted} />
         </TouchableOpacity>
       </View>
 
+      {/* 属性标签：权重 */}
+      <View style={styles.taskAttributes}>
+        <View style={styles.weightTag}>
+          <ThemedText variant="caption" color={theme.primary}>权重 {item.weight}</ThemedText>
+        </View>
+      </View>
+
+      {/* 进度条 */}
       <View style={styles.taskFooter}>
         <View style={styles.progressBarContainer}>
           <View style={[styles.progressBar, { width: `${item.completionPercentage}%` }]} />
@@ -152,6 +156,7 @@ export default function GoalDetailScreen() {
         </ThemedText>
       </View>
 
+      {/* 日期信息 */}
       {(item.startDate || item.endDate) && (
         <View style={styles.dateInfo}>
           {item.startDate && (
