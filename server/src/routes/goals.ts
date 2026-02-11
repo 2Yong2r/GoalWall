@@ -93,4 +93,49 @@ router.post("/reorder", async (req, res) => {
   }
 });
 
+// 获取回收站中的目标
+router.get("/trash/all", async (req, res) => {
+  try {
+    const goals = await goalManager.getDeletedGoals();
+    res.json({ success: true, data: goals });
+  } catch (error) {
+    console.error("Error fetching trash goals:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch trash goals" });
+  }
+});
+
+// 恢复目标
+router.post("/:id/restore", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = await goalManager.restoreGoal(id);
+
+    if (!success) {
+      return res.status(404).json({ success: false, error: "Goal not found" });
+    }
+
+    res.json({ success: true, message: "Goal restored successfully" });
+  } catch (error) {
+    console.error("Error restoring goal:", error);
+    res.status(500).json({ success: false, error: "Failed to restore goal" });
+  }
+});
+
+// 彻底删除目标
+router.delete("/:id/permanent", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = await goalManager.permanentDeleteGoal(id);
+
+    if (!success) {
+      return res.status(404).json({ success: false, error: "Goal not found" });
+    }
+
+    res.json({ success: true, message: "Goal permanently deleted successfully" });
+  } catch (error) {
+    console.error("Error permanently deleting goal:", error);
+    res.status(500).json({ success: false, error: "Failed to permanently delete goal" });
+  }
+});
+
 export default router;

@@ -22,6 +22,7 @@ export const goals = pgTable(
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
     order: integer("order").default(0).notNull(), // 排序顺序
+    deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'date' }), // 软删除时间
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull(),
@@ -30,6 +31,7 @@ export const goals = pgTable(
   (table) => ({
     nameIdx: index("goals_name_idx").on(table.name),
     orderIdx: index("goals_order_idx").on(table.order),
+    deletedAtIdx: index("goals_deleted_at_idx").on(table.deletedAt),
   })
 );
 
@@ -47,6 +49,7 @@ export const tasks = pgTable(
     endDate: timestamp("end_date", { withTimezone: true, mode: 'date' }), // 结束日期
     completionPercentage: integer("completion_percentage").default(0).notNull(), // 完成百分比 (0-100)
     actualCompletionDate: timestamp("actual_completion_date", { withTimezone: true, mode: 'date' }), // 实际完成日期
+    deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'date' }), // 软删除时间
     createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull(),
@@ -54,6 +57,7 @@ export const tasks = pgTable(
   },
   (table) => ({
     goalIdIdx: index("tasks_goal_id_idx").on(table.goalId),
+    deletedAtIdx: index("tasks_deleted_at_idx").on(table.deletedAt),
   })
 );
 

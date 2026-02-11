@@ -88,6 +88,51 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// 获取回收站中的任务
+router.get("/trash/all", async (req, res) => {
+  try {
+    const tasks = await taskManager.getDeletedTasks();
+    res.json({ success: true, data: tasks });
+  } catch (error) {
+    console.error("Error fetching trash tasks:", error);
+    res.status(500).json({ success: false, error: "Failed to fetch trash tasks" });
+  }
+});
+
+// 恢复任务
+router.post("/:id/restore", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = await taskManager.restoreTask(id);
+
+    if (!success) {
+      return res.status(404).json({ success: false, error: "Task not found" });
+    }
+
+    res.json({ success: true, message: "Task restored successfully" });
+  } catch (error) {
+    console.error("Error restoring task:", error);
+    res.status(500).json({ success: false, error: "Failed to restore task" });
+  }
+});
+
+// 彻底删除任务
+router.delete("/:id/permanent", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = await taskManager.permanentDeleteTask(id);
+
+    if (!success) {
+      return res.status(404).json({ success: false, error: "Task not found" });
+    }
+
+    res.json({ success: true, message: "Task permanently deleted successfully" });
+  } catch (error) {
+    console.error("Error permanently deleting task:", error);
+    res.status(500).json({ success: false, error: "Failed to permanently delete task" });
+  }
+});
+
 // 获取任务更新记录
 router.get("/:id/updates", async (req, res) => {
   try {

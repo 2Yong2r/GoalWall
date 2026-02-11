@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, isNull, isNotNull, and } from "drizzle-orm";
 import { getDb } from "coze-coding-dev-sdk";
 import { tasks, taskUpdates, insertTaskSchema, updateTaskSchema, insertTaskUpdateSchema } from "./shared/schema";
 import type { Task, InsertTask, UpdateTask, TaskUpdate, InsertTaskUpdate } from "./shared/schema";
@@ -14,12 +14,13 @@ export class TaskManager {
 
   async getAllTasks(): Promise<Task[]> {
     const db = await getDb(schema);
-    return db.select().from(tasks).orderBy(sql`${tasks.createdAt} DESC`);
+    // 只返回未被删除的任务
+    return db.select().from(tasks).where(isNull(tasks.deletedAt)).orderBy(sql`${tasks.createdAt} DESC`);
   }
 
   async getTasksByGoalId(goalId: string): Promise<Task[]> {
     const db = await getDb(schema);
-    return db.select().from(tasks).where(eq(tasks.goalId, goalId)).orderBy(sql`${tasks.createdAt} DESC`);
+    return db.select().from(tasks).where(and(eq(tasks.goalId, goalId), isNull(tasks.deletedAt))).orderBy(sql`${tasks.createdAt} DESC`);
   }
 
   async getTaskById(id: string): Promise<Task | null> {
@@ -91,8 +92,38 @@ export class TaskManager {
     return task;
   }
 
+  // 软删除任务
   async deleteTask(id: string): Promise<boolean> {
     const db = await getDb(schema);
+    const result = await db
+      .update(tasks)
+      .set({ deletedAt: new Date() })
+      .where(eq(tasks.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // 获取回收站中的任务
+  async getDeletedTasks(): Promise<Task[]> {
+    const db = await getDb(schema);
+    return db.select().from(tasks).where(isNotNull(tasks.deletedAt)).orderBy(sql`${tasks.deletedAt} DESC`);
+  }
+
+  // 恢复任务
+  async restoreTask(id: string): Promise<boolean> {
+    const db = await getDb(schema);
+    const result = await db
+      .update(tasks)
+      .set({ deletedAt: null, updatedAt: new Date() })
+      .where(eq(tasks.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // 彻底删除任务
+  async permanentDeleteTask(id: string): Promise<boolean> {
+    const db = await getDb(schema);
+    // 先删除关联的更新记录
+    await db.delete(taskUpdates).where(eq(taskUpdates.taskId, id));
+    // 再删除任务
     const result = await db.delete(tasks).where(eq(tasks.id, id));
     return (result.rowCount ?? 0) > 0;
   }
