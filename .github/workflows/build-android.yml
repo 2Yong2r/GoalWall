@@ -1,7 +1,7 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch:  # 仅允许手动触发
+  workflow_dispatch:  # 仅手动触发
 
 jobs:
   build:
@@ -19,12 +19,11 @@ jobs:
         with:
           node-version: '20'
 
-      # 设置 pnpm（移除 version 参数，使用 package.json 中指定的版本）
+      # 设置 pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          # version: '9'  # ← 移除此行，使用 package.json 中的 packageManager
-          version: '9.0.0'  # ← 或者明确指定 9.0.0 与 package.json 保持一致
+          version: '9.0.0'
 
       # 设置 Java 环境
       - name: Setup Java
@@ -61,10 +60,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-expo-
 
+      # 设置后端 API 地址（重要！）
+      # 修改这里：将 BACKEND_URL 替换为你的实际后端地址
+      - name: Set Backend URL
+        id: backend-url
+        run: |
+          # 方案 1：使用 GitHub Secrets（推荐用于生产环境）
+          # 在 GitHub 仓库设置中添加 SECRET：BACKEND_URL
+          # 例如：https://your-api.example.com
+          if [ -n "${{ secrets.BACKEND_URL }}" ]; then
+            echo "url=${{ secrets.BACKEND_URL }}" >> $GITHUB_OUTPUT
+            echo "Using backend URL from Secrets"
+          # 方案 2：使用默认值（仅用于测试）
+          else
+            echo "url=https://your-api.example.com" >> $GITHUB_OUTPUT
+            echo "⚠️  WARNING: Using default backend URL!"
+            echo "   Please set BACKEND_URL Secret in GitHub repository settings."
+          fi
+
       # 生成 Android 原生项目
       - name: Prebuild Android
         run: |
           cd client
+          # 设置环境变量（在构建时内联到 APK）
+          export EXPO_PUBLIC_BACKEND_BASE_URL="${{ steps.backend-url.outputs.url }}"
+          echo "Building with backend URL: $EXPO_PUBLIC_BACKEND_BASE_URL"
           npx expo prebuild --platform android --clean
 
       # 构建 Debug APK
