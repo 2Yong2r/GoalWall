@@ -1,6 +1,6 @@
 {
-  "version": "1.2.0",
-  "lastUpdated": "2026-02-11T10:35:00Z",
+  "version": "0.3.0",
+  "lastUpdated": "2026-02-11T10:45:00Z",
   "totalFiles": 52,
   "thresholds": {
     "minorVersionFiles": 5,
@@ -8,25 +8,32 @@
   },
   "history": [
     {
-      "version": "1.2.0",
+      "version": "0.3.0",
+      "releaseDate": "2026-02-11T10:45:00Z",
+      "description": "调整版本管理规则：版本号从 0.0.0 开始，0.x.x 表示开发版本",
+      "filesModified": 6,
+      "changeType": "minor"
+    },
+    {
+      "version": "0.2.0",
       "releaseDate": "2026-02-11T10:35:00Z",
       "description": "新增版本管理功能：自动版本号更新、版本历史记录",
       "filesModified": 11,
       "changeType": "minor"
     },
     {
-      "version": "1.1.0",
+      "version": "0.1.0",
       "releaseDate": "2026-02-11T10:30:00Z",
       "description": "将任务权重改为优先级，修改目标进度计算方法",
       "filesModified": 7,
       "changeType": "minor"
     },
     {
-      "version": "1.0.0",
+      "version": "0.0.0",
       "releaseDate": "2026-02-11T02:00:00Z",
       "description": "初始版本：实现基础目标管理功能",
       "filesModified": 20,
-      "changeType": "major"
+      "changeType": "minor"
     }
   ]
 }

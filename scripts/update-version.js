@@ -12,7 +12,7 @@ function readVersionConfig() {
   if (!fs.existsSync(VERSION_FILE)) {
     // 如果文件不存在，创建初始配置
     const initialConfig = {
-      version: '0.1.0',
+      version: '0.0.0',
       lastUpdated: new Date().toISOString(),
       totalFiles: 0,
       thresholds: {

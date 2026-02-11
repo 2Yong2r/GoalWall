@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
       return res.json({
         success: true,
         data: {
-          version: "0.1.0",
+          version: "0.0.0",
           lastUpdated: new Date().toISOString(),
           totalFiles: 0,
           thresholds: {
