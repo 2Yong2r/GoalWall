@@ -66,6 +66,10 @@ export default function GoalDetailScreen() {
   useFocusEffect(
     useCallback(() => {
       console.log('[GoalDetail] Page focused');
+      console.log('[GoalDetail] params:', params);
+      console.log('[GoalDetail] params.goalId:', params.goalId);
+      console.log('[GoalDetail] params.mode:', params.mode);
+      console.log('[GoalDetail] isCreateMode:', isCreateMode);
       fetchGoalDetail();
       fetchTasks();
       // eslint-disable-next-line react-hooks/exhaustive-deps

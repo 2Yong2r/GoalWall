@@ -64,10 +64,14 @@ class WebDatabase {
 
   private filterRecords(records: any[], whereClause: string, params: any[]): any[] {
     if (!whereClause) return records;
-    
+
+    console.log('[WebDatabase] filterRecords called with records:', records.length);
+    console.log('[WebDatabase] filterRecords whereClause:', whereClause);
+    console.log('[WebDatabase] filterRecords params:', params);
+
     // 解析 WHERE 子句中的条件
     const conditions: any[] = [];
-    
+
     // 匹配所有 "column = ?" 或 "column = 'value'" 或 "column = "value"" 的模式
     const equalsMatches = [...whereClause.matchAll(/(\w+)\s*=\s*(?:"([^"]+)"|'([^']+)'|\?)/g)];
     for (const match of equalsMatches) {
@@ -81,36 +85,38 @@ class WebDatabase {
         conditions.push({ column, operator: '=', paramIndex: conditions.filter(c => c.paramIndex !== undefined).length });
       }
     }
-    
+
     // 匹配 "column IS NULL"
     const isNullMatches = [...whereClause.matchAll(/(\w+)\s+IS\s+NULL/gi)];
     for (const match of isNullMatches) {
       conditions.push({ column: match[1], operator: 'IS NULL' });
     }
-    
+
     // 匹配 "column IS NOT NULL"
     const isNotNullMatches = [...whereClause.matchAll(/(\w+)\s+IS\s+NOT\s+NULL/gi)];
     for (const match of isNotNullMatches) {
       conditions.push({ column: match[1], operator: 'IS NOT NULL' });
     }
-    
+
     // 匹配 "column <= ?"
     const lessThanOrEqualMatches = [...whereClause.matchAll(/(\w+)\s*<=\s*\?/g)];
     for (const match of lessThanOrEqualMatches) {
       conditions.push({ column: match[1], operator: '<=', paramIndex: conditions.filter(c => c.paramIndex !== undefined).length });
     }
-    
+
     // 匹配 "column >= ?"
     const greaterThanOrEqualMatches = [...whereClause.matchAll(/(\w+)\s*>=\s*\?/g)];
     for (const match of greaterThanOrEqualMatches) {
       conditions.push({ column: match[1], operator: '>=', paramIndex: conditions.filter(c => c.paramIndex !== undefined).length });
     }
-    
-    return records.filter(record => {
+
+    console.log('[WebDatabase] Parsed conditions:', conditions);
+
+    const filtered = records.filter(record => {
       for (const condition of conditions) {
         const columnValue = record[condition.column];
         const expectedValue = condition.paramIndex !== undefined ? params[condition.paramIndex] : condition.value;
-        
+
         switch (condition.operator) {
           case '=':
             if (columnValue !== expectedValue) return false;
@@ -131,6 +137,9 @@ class WebDatabase {
       }
       return true;
     });
+
+    console.log('[WebDatabase] Filtered records:', filtered.length);
+    return filtered;
   }
 
   private sortRecords(records: any[], orderByClause: string): any[] {
@@ -175,14 +184,20 @@ class WebDatabase {
   }
 
   async getAllAsync(sql: string, params?: any[]): Promise<any[]> {
-    console.log('[WebDatabase] Getting all records');
-    
+    console.log('[WebDatabase] getAllAsync called with SQL:', sql);
+    console.log('[WebDatabase] getAllAsync params:', params);
+
     const tableNameMatch = sql.match(/FROM\s+(\w+)/);
-    if (!tableNameMatch) return [];
-    
+    if (!tableNameMatch) {
+      console.log('[WebDatabase] No table found in SQL');
+      return [];
+    }
+
     const tableName = tableNameMatch[1];
+    console.log('[WebDatabase] Table name:', tableName);
     let records = await this.getAllRecords(tableName);
-    
+    console.log('[WebDatabase] Total records before filter:', records.length);
+
     // 解析 WHERE 子句
     const whereIndex = sql.toUpperCase().indexOf('WHERE');
     const orderByIndex = sql.toUpperCase().indexOf('ORDER BY');
@@ -194,9 +209,12 @@ class WebDatabase {
         whereClause = sql.substring(whereIndex + 5).trim();
       }
     }
-    
+
+    console.log('[WebDatabase] WHERE clause:', whereClause);
+
     if (whereClause) {
       records = this.filterRecords(records, whereClause, params || []);
+      console.log('[WebDatabase] Total records after filter:', records.length);
     }
     
     // 解析 ORDER BY 子句
