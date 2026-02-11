@@ -60,44 +60,6 @@ export default function GoalDetailScreen() {
     }
   }, [params.goalId, isCreateMode]);
 
-  // 计算目标进度（加权平均）
-  const calculateGoalProgress = useCallback(() => {
-    if (tasks.length === 0) return 0;
-
-    let totalWeight = 0;
-    let weightedProgress = 0;
-
-    tasks.forEach(task => {
-      weightedProgress += task.completionPercentage * task.weight;
-      totalWeight += task.weight;
-    });
-
-    return totalWeight > 0 ? Math.round(weightedProgress / totalWeight) : 0;
-  }, [tasks]);
-
-  // 计算目标起止日期
-  const calculateGoalDateRange = useCallback(() => {
-    if (tasks.length === 0) return { startDate: null, endDate: null };
-
-    const startDates = tasks
-      .map(t => t.startDate)
-      .filter((d): d is string => d !== null)
-      .map(d => new Date(d).getTime());
-
-    const endDates = tasks
-      .map(t => t.endDate)
-      .filter((d): d is string => d !== null)
-      .map(d => new Date(d).getTime());
-
-    return {
-      startDate: startDates.length > 0 ? new Date(Math.min(...startDates)) : null,
-      endDate: endDates.length > 0 ? new Date(Math.max(...endDates)) : null,
-    };
-  }, [tasks]);
-
-  const goalProgress = calculateGoalProgress();
-  const { startDate: goalStartDate, endDate: goalEndDate } = calculateGoalDateRange();
-
   // 页面聚焦时刷新数据
   useFocusEffect(
     useCallback(() => {
@@ -256,43 +218,6 @@ export default function GoalDetailScreen() {
                 <ThemedText variant="body" color={theme.textSecondary} style={styles.goalDescription}>
                   {isCreateMode ? goalDescription : goal?.description}
                 </ThemedText>
-              )}
-
-              {/* 目标进度 */}
-              {!isCreateMode && tasks.length > 0 && (
-                <View style={styles.goalProgressSection}>
-                  <View style={styles.progressHeader}>
-                    <ThemedText variant="body" color={theme.textSecondary}>
-                      目标进度
-                    </ThemedText>
-                    <ThemedText variant="bodyMedium" color={theme.primary}>
-                      {goalProgress}%
-                    </ThemedText>
-                  </View>
-                  <View style={styles.goalProgressBar}>
-                    <View style={[styles.goalProgressFill, { width: `${goalProgress}%` }]} />
-                  </View>
-                </View>
-              )}
-
-              {/* 目标日期范围 */}
-              {!isCreateMode && (goalStartDate || goalEndDate) && (
-                <View style={styles.goalDateRange}>
-                  <FontAwesome6 name="calendar-days" size={16} color={theme.primary} />
-                  {goalStartDate && goalEndDate ? (
-                    <ThemedText variant="caption" color={theme.textSecondary} style={styles.dateRangeText}>
-                      {goalStartDate.toLocaleDateString()} - {goalEndDate.toLocaleDateString()}
-                    </ThemedText>
-                  ) : goalStartDate ? (
-                    <ThemedText variant="caption" color={theme.textSecondary} style={styles.dateRangeText}>
-                      开始: {goalStartDate.toLocaleDateString()}
-                    </ThemedText>
-                  ) : goalEndDate ? (
-                    <ThemedText variant="caption" color={theme.textSecondary} style={styles.dateRangeText}>
-                      结束: {goalEndDate.toLocaleDateString()}
-                    </ThemedText>
-                  ) : null}
-                </View>
               )}
             </ThemedView>
 

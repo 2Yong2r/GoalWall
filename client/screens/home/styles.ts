@@ -52,6 +52,34 @@ export const createStyles = (theme: Theme) => {
     goalDescription: {
       fontSize: 14,
       lineHeight: 20,
+      marginBottom: Spacing.sm,
+    },
+    progressSection: {
+      marginTop: Spacing.sm,
+    },
+    progressHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: Spacing.xs,
+    },
+    progressBar: {
+      height: 6,
+      backgroundColor: theme.border,
+      borderRadius: 3,
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: theme.primary,
+    },
+    dateRange: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: Spacing.sm,
+    },
+    dateRangeText: {
+      marginLeft: Spacing.xs,
     },
     deleteButton: {
       padding: Spacing.xs,
