@@ -48,6 +48,27 @@ export default function TodosScreen() {
         withoutDueDate.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'));
 
         sortedData = [...withDueDate, ...withoutDueDate];
+      } else if (mode === 'upcoming') {
+        // 未来7天：仅显示截止日期在未来7天之内的待办
+        const now = new Date();
+        const sevenDaysLater = new Date(now);
+        sevenDaysLater.setDate(now.getDate() + 7);
+
+        // 过滤出有截止日期且在7天内的待办
+        const upcomingTodos = data.filter(t => {
+          if (!t.dueDate) return false;
+          const dueDate = new Date(t.dueDate);
+          // 范围：今天到7天后（包含今天和第7天）
+          return dueDate >= now && dueDate <= sevenDaysLater;
+        });
+
+        // 按截止日期升序排列
+        upcomingTodos.sort((a, b) => {
+          if (!a.dueDate || !b.dueDate) return 0;
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        });
+
+        sortedData = upcomingTodos;
       }
 
       setTodos(sortedData);
