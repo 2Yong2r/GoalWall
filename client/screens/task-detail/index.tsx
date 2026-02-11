@@ -122,8 +122,11 @@ export default function TaskDetailScreen() {
         taskData.endDate = endDate.toISOString();
       }
 
+      console.log('[TaskDetail] Creating task with data:', taskData);
+
       if (isCreateMode) {
-        await localApiService.createTask(taskData);
+        const newTask = await localApiService.createTask(taskData);
+        console.log('[TaskDetail] Task created successfully:', newTask.id);
         router.back();
       } else {
         const updatedTask = await localApiService.updateTask(params.taskId!, taskData);

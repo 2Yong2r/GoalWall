@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, TouchableOpacity, FlatList, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable, Keyboard, Alert } from 'react-native';
-import { useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from 'expo-router';
 import { useSafeRouter, useSafeSearchParams } from '@/hooks/useSafeRouter';
 import { Screen } from '@/components/Screen';
 import { ThemedText } from '@/components/ThemedText';
@@ -16,7 +16,6 @@ export default function GoalDetailScreen() {
   const styles = createStyles(theme);
   const router = useSafeRouter();
   const params = useSafeSearchParams<{ goalId: string; mode?: 'create' }>();
-  const isFocused = useIsFocused();
 
   const [goal, setGoal] = useState<Goal | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -54,7 +53,9 @@ export default function GoalDetailScreen() {
     if (!params.goalId) return;
 
     try {
+      console.log('[GoalDetail] Fetching tasks for goal:', params.goalId);
       const tasksData = await localApiService.getTasksByGoal(params.goalId);
+      console.log('[GoalDetail] Fetched tasks:', tasksData.length, tasksData);
       setTasks(tasksData);
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
@@ -62,12 +63,14 @@ export default function GoalDetailScreen() {
   }, [params.goalId]);
 
   // 页面聚焦时刷新数据
-  useEffect(() => {
-    if (isFocused && params.goalId && !isCreateMode) {
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[GoalDetail] Page focused');
       fetchGoalDetail();
       fetchTasks();
-    }
-  }, [isFocused, params.goalId, params.mode]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
 
   // 开始编辑
   const handleStartEdit = () => {
