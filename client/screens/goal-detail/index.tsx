@@ -51,30 +51,37 @@ export default function GoalDetailScreen() {
 
   // 获取目标任务（使用本地 API）
   const fetchTasks = useCallback(async () => {
-    if (!params.goalId) return;
+    if (!params.goalId) {
+      console.log('[GoalDetail] fetchTasks: No goalId, skipping');
+      return;
+    }
 
     try {
       console.log('[GoalDetail] Fetching tasks for goal:', params.goalId);
       const tasksData = await localApiService.getTasksByGoal(params.goalId);
       console.log('[GoalDetail] Fetched tasks:', tasksData.length, tasksData);
       setTasks(tasksData);
+      console.log('[GoalDetail] Tasks state updated with', tasksData.length, 'tasks');
     } catch (error) {
-      console.error('Failed to fetch tasks:', error);
+      console.error('[GoalDetail] Failed to fetch tasks:', error);
     }
   }, [params.goalId]);
 
   // 页面聚焦时刷新数据
   useFocusEffect(
-    useCallback(() => {
+    React.useCallback(() => {
       console.log('[GoalDetail] Page focused');
-      console.log('[GoalDetail] params:', params);
       console.log('[GoalDetail] params.goalId:', params.goalId);
-      console.log('[GoalDetail] params.mode:', params.mode);
-      console.log('[GoalDetail] isCreateMode:', isCreateMode);
-      fetchGoalDetail();
-      fetchTasks();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+
+      const refreshData = async () => {
+        console.log('[GoalDetail] Starting data refresh...');
+        await fetchGoalDetail();
+        await fetchTasks();
+        console.log('[GoalDetail] Data refresh completed');
+      };
+
+      refreshData();
+    }, [fetchGoalDetail, fetchTasks])
   );
 
   // 开始编辑

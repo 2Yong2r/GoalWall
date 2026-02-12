@@ -71,6 +71,12 @@ export async function createTask(task: {
       ]
     );
     console.log('[Tasks] Task created successfully:', task.id);
+
+    // 验证插入结果
+    if (task.goal_id) {
+      const inserted = await getTasksByGoalId(task.goal_id);
+      console.log('[Tasks] Verified tasks for goal', task.goal_id, ':', inserted.length, 'tasks');
+    }
   } catch (error) {
     console.error('[Tasks] Failed to create task:', error);
     throw error;
