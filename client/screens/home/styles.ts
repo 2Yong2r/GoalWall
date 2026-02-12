@@ -37,6 +37,9 @@ export const createStyles = (theme: Theme) => {
       paddingHorizontal: Spacing.lg,
       paddingBottom: Spacing['5xl'],
     },
+    list: {
+      flex: 1,
+    },
     goalCard: {
       backgroundColor: theme.backgroundDefault,
       borderRadius: BorderRadius.lg,

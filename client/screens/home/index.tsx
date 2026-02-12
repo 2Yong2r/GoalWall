@@ -277,6 +277,7 @@ export default function HomeScreen() {
           contentContainerStyle={styles.listContent}
           scrollEventThrottle={16}
           removeClippedSubviews={false}
+          style={styles.list}
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={fetchGoals} />
           }

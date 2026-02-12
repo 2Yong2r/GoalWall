@@ -34,7 +34,7 @@ export default function TabLayout() {
         options={{
           title: '目标',
           tabBarIcon: ({ color }) => (
-            <FontAwesome6 name="flag" size={20} color={color} />
+            <FontAwesome6 name="bullseye" size={20} color={color} />
           ),
         }}
       />
