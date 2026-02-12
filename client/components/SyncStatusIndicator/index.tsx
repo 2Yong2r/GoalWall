@@ -1,65 +1,12 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useTheme } from '@/hooks/useTheme';
-import { FontAwesome6 } from '@expo/vector-icons';
-import { syncManager } from '@/services/sync';
 
+/**
+ * 同步状态指示器
+ * 
+ * 根据需求，默认不显示任何同步状态提示。
+ * 只在同步失败时通过 Toast 显示简短的错误信息。
+ */
 export function SyncStatusIndicator() {
-  const { theme } = useTheme();
-  const [status, setStatus] = React.useState(syncManager.getState());
-
-  React.useEffect(() => {
-    const unsubscribe = syncManager.subscribe((newState) => {
-      setStatus(newState);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  const getStatusColor = () => {
-    switch (status.status) {
-      case 'syncing':
-        return theme.primary;
-      case 'success':
-        return theme.success;
-      case 'error':
-        return theme.error;
-      default:
-        return theme.textMuted;
-    }
-  };
-
-  const getStatusIcon = () => {
-    switch (status.status) {
-      case 'syncing':
-        return 'rotate';
-      case 'success':
-        return 'check-circle';
-      case 'error':
-        return 'exclamation-circle';
-      default:
-        return 'cloud';
-    }
-  };
-
-  // 只在非 idle 状态显示图标
-  if (status.status === 'idle') {
-    return null;
-  }
-
-  return (
-    <View style={styles.container}>
-      <FontAwesome6
-        name={getStatusIcon() as any}
-        size={18}
-        color={getStatusColor()}
-      />
-    </View>
-  );
+  // 默认不显示任何内容，保持静默
+  return null;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 8,
-  },
-});

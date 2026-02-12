@@ -16,6 +16,7 @@ import {
   upsertTodosFromCloud,
   markTodoRemoteDeleted,
 } from '../database/todos';
+import { showToast } from '@/contexts/ToastContext';
 
 export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error';
 
@@ -315,7 +316,7 @@ class SyncManager {
   }
 
   /**
-   * 执行完整同步
+   * 执行完整同步（带超时控制）
    */
   async sync(): Promise<void> {
     // 检查后端是否可用
@@ -329,15 +330,18 @@ class SyncManager {
     try {
       this.updateState({ status: 'syncing', errorMessage: null });
 
-      // 1. 先上传本地更改
-      await this.uploadGoals();
-      await this.uploadTasks();
-      await this.uploadTodos();
+      // 设置超时（10 秒）
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Sync timeout')), 10000);
+      });
 
-      // 2. 从云端下载数据
-      await this.downloadFromCloud();
+      // 执行同步，使用 Promise.race 实现超时控制
+      await Promise.race([
+        this.performSync(),
+        timeoutPromise,
+      ]);
 
-      // 3. 更新同步状态
+      // 3. 更新同步状态（成功）
       this.updateState({
         status: 'success',
         lastSyncTime: new Date().toISOString(),
@@ -345,11 +349,29 @@ class SyncManager {
       });
     } catch (error) {
       console.error('[Sync] Sync failed:', error);
+      
+      // 更新同步状态（失败）
       this.updateState({
         status: 'error',
         errorMessage: '同步失败，数据已保存到本地',
       });
+
+      // 显示 Toast 提示
+      showToast('同步失败，数据已保存到本地', 3000);
     }
+  }
+
+  /**
+   * 执行实际的同步操作
+   */
+  private async performSync(): Promise<void> {
+    // 1. 先上传本地更改
+    await this.uploadGoals();
+    await this.uploadTasks();
+    await this.uploadTodos();
+
+    // 2. 从云端下载数据
+    await this.downloadFromCloud();
   }
 
   /**
