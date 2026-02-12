@@ -22,7 +22,8 @@ export function useAppInitialization() {
         } else {
           console.warn('[App] EXPO_PUBLIC_BACKEND_BASE_URL not found, using default');
         }
-        backendUrl = 'http://127.0.0.1:9091';
+        // 使用 localhost 而不是 127.0.0.1，以确保在 Web 环境中正常工作
+        backendUrl = 'http://localhost:9091';
       }
 
       console.log('[App] Backend URL:', backendUrl);

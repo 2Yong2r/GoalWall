@@ -16,10 +16,39 @@ export default function DebugScreen() {
   const [localTodos, setLocalTodos] = useState<any[]>([]);
   const [syncStatus, setSyncStatus] = useState<any>(null);
   const [logs, setLogs] = useState<string[]>([]);
+  const [backendUrl, setBackendUrl] = useState<string>('');
+  const [healthCheck, setHealthCheck] = useState<string>('未检查');
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
     setLogs(prev => [`[${timestamp}] ${message}`, ...prev].slice(0, 20));
+  };
+
+  // 检查后端配置
+  const checkBackendConfig = async () => {
+    const url = process.env.EXPO_PUBLIC_BACKEND_BASE_URL || '';
+    setBackendUrl(url);
+    addLog(`Backend URL: ${url || '未设置'}`);
+
+    if (!url) {
+      setHealthCheck('未配置后端URL');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${url}/api/v1/health`, { method: 'GET', signal: AbortSignal.timeout(5000) });
+      if (response.ok) {
+        const data = await response.json();
+        setHealthCheck(`✅ 正常: ${JSON.stringify(data)}`);
+        addLog('Backend health check passed');
+      } else {
+        setHealthCheck(`❌ 错误: HTTP ${response.status}`);
+        addLog(`Backend health check failed: HTTP ${response.status}`);
+      }
+    } catch (error: any) {
+      setHealthCheck(`❌ 连接失败: ${error.message}`);
+      addLog(`Backend health check error: ${error.message}`);
+    }
   };
 
   const loadLocalData = async () => {
@@ -115,9 +144,15 @@ export default function DebugScreen() {
           <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>同步控制</Text>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: theme.primary }]}
+            onPress={checkBackendConfig}
+          >
+            <Text style={styles.buttonText}>检查后端连接</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: theme.backgroundDefault }]}
             onPress={handleManualSync}
           >
-            <Text style={styles.buttonText}>手动触发同步</Text>
+            <Text style={[styles.buttonText, { color: theme.textPrimary }]}>手动触发同步</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: theme.backgroundDefault }]}
@@ -137,6 +172,17 @@ export default function DebugScreen() {
           >
             <Text style={styles.buttonText}>清空日志</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* 后端配置 */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>后端配置</Text>
+          <Text style={[styles.text, { color: theme.textSecondary }]}>
+            URL: {backendUrl || '未设置'}
+          </Text>
+          <Text style={[styles.text, { color: healthCheck.includes('✅') ? theme.success : healthCheck.includes('❌') ? theme.error : theme.textSecondary }]}>
+            健康检查: {healthCheck}
+          </Text>
         </View>
 
         {/* 同步状态 */}

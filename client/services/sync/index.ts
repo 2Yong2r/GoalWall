@@ -41,7 +41,51 @@ class SyncManager {
 
   constructor() {
     // 从环境变量获取后端 URL
-    this.backendUrl = process.env.EXPO_PUBLIC_BACKEND_BASE_URL || '';
+    const url = process.env.EXPO_PUBLIC_BACKEND_BASE_URL || '';
+    this.backendUrl = url;
+
+    console.log('[Sync] SyncManager initialized');
+    console.log('[Sync] Backend URL from env:', url);
+
+    // 如果没有设置 URL，尝试自动检测
+    if (!url) {
+      console.warn('[Sync] EXPO_PUBLIC_BACKEND_BASE_URL not set, trying to detect...');
+      this.detectBackendUrl();
+    }
+  }
+
+  /**
+   * 自动检测后端 URL
+   */
+  private async detectBackendUrl() {
+    const possibleUrls = [
+      'http://localhost:9091',
+      'http://127.0.0.1:9091',
+      'http://0.0.0.0:9091',
+      // 如果需要，可以添加更多可能的后端地址
+    ];
+
+    console.log('[Sync] Trying to detect backend URL...');
+
+    for (const url of possibleUrls) {
+      try {
+        console.log(`[Sync] Trying ${url}...`);
+        const response = await fetch(`${url}/api/v1/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(2000),
+        });
+
+        if (response.ok) {
+          console.log(`[Sync] Backend detected at: ${url}`);
+          this.setBackendUrl(url);
+          return;
+        }
+      } catch (error) {
+        console.log(`[Sync] Failed to connect to ${url}`);
+      }
+    }
+
+    console.error('[Sync] Could not detect backend URL automatically');
   }
 
   /**
@@ -100,16 +144,19 @@ class SyncManager {
    */
   private async isBackendAvailable(): Promise<boolean> {
     if (!this.backendUrl) {
-      // 静默返回 false，不输出警告
+      console.error('[Sync] Backend URL not configured');
       return false;
     }
 
-    const healthUrl = `${this.backendUrl}/api/v1/health`;
+    // 使用相对路径，让 Metro 代理处理请求
+    const healthUrl = '/api/v1/health';
 
     try {
+      console.log('[Sync] Checking backend availability at:', healthUrl);
+
       // 使用 Promise.race 实现超时（兼容性更好）
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 5000);
+        setTimeout(() => reject(new Error('Request timeout')), 10000); // 增加超时时间到10秒
       });
 
       const response = await Promise.race([
@@ -117,8 +164,11 @@ class SyncManager {
         timeoutPromise,
       ]);
 
-      return response.ok;
-    } catch (error) {
+      const isOk = response.ok;
+      console.log('[Sync] Backend availability check:', isOk ? 'OK' : 'Failed', `Status: ${response.status}`);
+      return isOk;
+    } catch (error: any) {
+      console.error('[Sync] Backend availability check failed:', error.message);
       // 静默处理网络错误，避免频繁输出日志
       // 手机在本地开发时无法访问到后端是正常情况
       return false;
@@ -146,16 +196,16 @@ class SyncManager {
         if (goal.deleted_at) {
           // 已删除的目标，删除云端数据
           console.log(`[Sync] Deleting goal: ${goal.id}`);
-          await fetch(`${this.backendUrl}/api/v1/goals/${goal.id}`, {
+          await fetch(`/api/v1/goals/${goal.id}`, {
             method: 'DELETE',
           });
         } else {
           // 新建或更新目标
           const method = goal.synced_at ? 'PUT' : 'POST';
           const url = goal.synced_at
-            ? `${this.backendUrl}/api/v1/goals/${goal.id}`
-            : `${this.backendUrl}/api/v1/goals`;
-          
+            ? `/api/v1/goals/${goal.id}`
+            : `/api/v1/goals`;
+
           console.log(`[Sync] ${method === 'POST' ? 'Creating' : 'Updating'} goal: ${goal.id}`);
           await fetch(url, {
             method,
@@ -205,14 +255,14 @@ class SyncManager {
         }
 
         if (task.deleted_at) {
-          await fetch(`${this.backendUrl}/api/v1/tasks/${task.id}`, {
+          await fetch(`/api/v1/tasks/${task.id}`, {
             method: 'DELETE',
           });
         } else {
           const method = task.synced_at ? 'PUT' : 'POST';
           const url = task.synced_at
-            ? `${this.backendUrl}/api/v1/tasks/${task.id}`
-            : `${this.backendUrl}/api/v1/tasks`;
+            ? `/api/v1/tasks/${task.id}`
+            : `/api/v1/tasks`;
 
           await fetch(url, {
             method,
@@ -264,14 +314,14 @@ class SyncManager {
         }
 
         if (todo.deleted_at) {
-          await fetch(`${this.backendUrl}/api/v1/todos/${todo.id}`, {
+          await fetch(`/api/v1/todos/${todo.id}`, {
             method: 'DELETE',
           });
         } else {
           const method = todo.synced_at ? 'PUT' : 'POST';
           const url = todo.synced_at
-            ? `${this.backendUrl}/api/v1/todos/${todo.id}`
-            : `${this.backendUrl}/api/v1/todos`;
+            ? `/api/v1/todos/${todo.id}`
+            : `/api/v1/todos`;
 
           await fetch(url, {
             method,
@@ -293,21 +343,21 @@ class SyncManager {
   private async downloadFromCloud(): Promise<void> {
     try {
       // 下载 Goals
-      const goalsResponse = await fetch(`${this.backendUrl}/api/v1/goals`);
+      const goalsResponse = await fetch('/api/v1/goals');
       const goalsResult = await goalsResponse.json();
       if (goalsResult.success) {
         await upsertGoalsFromCloud(goalsResult.data);
       }
 
       // 下载 Tasks
-      const tasksResponse = await fetch(`${this.backendUrl}/api/v1/tasks`);
+      const tasksResponse = await fetch('/api/v1/tasks');
       const tasksResult = await tasksResponse.json();
       if (tasksResult.success) {
         await upsertTasksFromCloud(tasksResult.data);
       }
 
       // 下载 Todos
-      const todosResponse = await fetch(`${this.backendUrl}/api/v1/todos`);
+      const todosResponse = await fetch('/api/v1/todos');
       const todosResult = await todosResponse.json();
       if (todosResult.success) {
         await upsertTodosFromCloud(todosResult.data);
