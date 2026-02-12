@@ -35,6 +35,10 @@ app.use('/api/v1/clear-data', clearDataRouter);
 app.use('/api/v1/clear-database', clearDatabaseRouter);
 app.use('/api/v1/test-data', testDataRouter);
 
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}/`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server listening at http://0.0.0.0:${port}/`);
+  console.log(`Server accessible via:`);
+  console.log(`  - localhost: http://localhost:${port}/`);
+  console.log(`  - 127.0.0.1: http://127.0.0.1:${port}/`);
+  console.log(`  - LAN: http://<your-ip>:${port}/`);
 });

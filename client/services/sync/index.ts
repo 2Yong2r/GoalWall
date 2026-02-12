@@ -196,9 +196,12 @@ class SyncManager {
         if (goal.deleted_at) {
           // 已删除的目标，删除云端数据
           console.log(`[Sync] Deleting goal: ${goal.id}`);
-          await fetch(`/api/v1/goals/${goal.id}`, {
+          const response = await fetch(`/api/v1/goals/${goal.id}`, {
             method: 'DELETE',
           });
+          console.log(`[Sync] Delete goal response: ${response.status} ${response.statusText}`);
+          const result = await response.text();
+          console.log(`[Sync] Delete goal body:`, result);
         } else {
           // 新建或更新目标
           const method = goal.synced_at ? 'PUT' : 'POST';
@@ -207,16 +210,23 @@ class SyncManager {
             : `/api/v1/goals`;
 
           console.log(`[Sync] ${method === 'POST' ? 'Creating' : 'Updating'} goal: ${goal.id}`);
-          await fetch(url, {
+          console.log(`[Sync] Request body:`, JSON.stringify(body, null, 2));
+          const response = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           });
+          console.log(`[Sync] Response status: ${response.status} ${response.statusText}`);
+          const result = await response.text();
+          console.log(`[Sync] Response body:`, result);
         }
 
         await markGoalSynced(goal.id);
-      } catch (error) {
-        console.error('[Sync] Failed to upload goal:', goal.id, error);
+      } catch (error: any) {
+        console.error('[Sync] Failed to upload goal:', goal.id, error.message);
+        if (error.message.includes('Network request failed')) {
+          console.error('[Sync] Network error - backend may not be accessible');
+        }
       }
     }
   }
@@ -255,25 +265,35 @@ class SyncManager {
         }
 
         if (task.deleted_at) {
-          await fetch(`/api/v1/tasks/${task.id}`, {
+          console.log(`[Sync] Deleting task: ${task.id}`);
+          const response = await fetch(`/api/v1/tasks/${task.id}`, {
             method: 'DELETE',
           });
+          console.log(`[Sync] Delete task response: ${response.status} ${response.statusText}`);
         } else {
           const method = task.synced_at ? 'PUT' : 'POST';
           const url = task.synced_at
             ? `/api/v1/tasks/${task.id}`
             : `/api/v1/tasks`;
 
-          await fetch(url, {
+          console.log(`[Sync] ${method === 'POST' ? 'Creating' : 'Updating'} task: ${task.id}`);
+          console.log(`[Sync] Request body:`, JSON.stringify(body, null, 2));
+          const response = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           });
+          console.log(`[Sync] Response status: ${response.status} ${response.statusText}`);
+          const result = await response.text();
+          console.log(`[Sync] Response body:`, result);
         }
 
         await markTaskSynced(task.id);
-      } catch (error) {
-        console.error('[Sync] Failed to upload task:', task.id, error);
+      } catch (error: any) {
+        console.error('[Sync] Failed to upload task:', task.id, error.message);
+        if (error.message.includes('Network request failed')) {
+          console.error('[Sync] Network error - backend may not be accessible');
+        }
       }
     }
   }
@@ -314,25 +334,35 @@ class SyncManager {
         }
 
         if (todo.deleted_at) {
-          await fetch(`/api/v1/todos/${todo.id}`, {
+          console.log(`[Sync] Deleting todo: ${todo.id}`);
+          const response = await fetch(`/api/v1/todos/${todo.id}`, {
             method: 'DELETE',
           });
+          console.log(`[Sync] Delete todo response: ${response.status} ${response.statusText}`);
         } else {
           const method = todo.synced_at ? 'PUT' : 'POST';
           const url = todo.synced_at
             ? `/api/v1/todos/${todo.id}`
             : `/api/v1/todos`;
 
-          await fetch(url, {
+          console.log(`[Sync] ${method === 'POST' ? 'Creating' : 'Updating'} todo: ${todo.id}`);
+          console.log(`[Sync] Request body:`, JSON.stringify(body, null, 2));
+          const response = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           });
+          console.log(`[Sync] Response status: ${response.status} ${response.statusText}`);
+          const result = await response.text();
+          console.log(`[Sync] Response body:`, result);
         }
 
         await markTodoSynced(todo.id);
-      } catch (error) {
-        console.error('[Sync] Failed to upload todo:', todo.id, error);
+      } catch (error: any) {
+        console.error('[Sync] Failed to upload todo:', todo.id, error.message);
+        if (error.message.includes('Network request failed')) {
+          console.error('[Sync] Network error - backend may not be accessible');
+        }
       }
     }
   }

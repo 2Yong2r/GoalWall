@@ -8,9 +8,11 @@ import * as TodoDAL from '@/services/database/todos';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDatabase } from '@/services/database/index';
 import { Screen } from '@/components/Screen';
+import { useSafeRouter } from '@/hooks/useSafeRouter';
 
 export default function DebugScreen() {
   const { theme } = useTheme();
+  const router = useSafeRouter();
   const [localGoals, setLocalGoals] = useState<any[]>([]);
   const [localTasks, setLocalTasks] = useState<any[]>([]);
   const [localTodos, setLocalTodos] = useState<any[]>([]);
@@ -171,6 +173,12 @@ export default function DebugScreen() {
             onPress={clearLogs}
           >
             <Text style={styles.buttonText}>清空日志</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: theme.accent }]}
+            onPress={() => router.push('/sync-test')}
+          >
+            <Text style={styles.buttonText}>同步测试页面（查看详细日志）</Text>
           </TouchableOpacity>
         </View>
 

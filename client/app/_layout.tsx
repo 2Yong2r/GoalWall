@@ -44,6 +44,7 @@ export default function RootLayout() {
                   <Stack.Screen name="trash" options={{ title: "" }} />
                   <Stack.Screen name="skin-select" options={{ title: "" }} />
                   <Stack.Screen name="debug" options={{ title: "" }} />
+                  <Stack.Screen name="sync-test" options={{ title: "" }} />
                 </Stack>
               </GestureHandlerRootView>
               {/* 全局 Toast 组件 */}
