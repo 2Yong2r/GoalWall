@@ -24,7 +24,19 @@ export async function createGoal(goal: {
 }): Promise<void> {
   try {
     console.log('[Goals] Creating goal:', goal.id, goal.name);
+
+    // 先检查是否已存在
     const db = await getDatabase();
+    const existing = await db.getFirstAsync(
+      'SELECT id FROM goals WHERE id = ?',
+      [goal.id]
+    );
+
+    if (existing) {
+      console.warn('[Goals] Goal already exists:', goal.id);
+      throw new Error(`Goal with id ${goal.id} already exists`);
+    }
+
     const now = new Date().toISOString();
 
     await db.runAsync(
@@ -43,6 +55,10 @@ export async function createGoal(goal: {
       ]
     );
     console.log('[Goals] Goal created successfully:', goal.id);
+
+    // 验证插入结果
+    const inserted = await getGoal(goal.id);
+    console.log('[Goals] Verified inserted goal:', inserted);
   } catch (error) {
     console.error('[Goals] Failed to create goal:', error);
     throw error;

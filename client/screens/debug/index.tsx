@@ -99,8 +99,10 @@ export default function DebugScreen() {
   };
 
   useEffect(() => {
-    loadLocalData();
-    addLog('Debug page loaded');
+    (async () => {
+      await loadLocalData();
+      addLog('Debug page loaded');
+    })();
   }, []);
 
   return (

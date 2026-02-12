@@ -59,6 +59,9 @@ export const createStyles = (theme: Theme) => {
       alignItems: 'center',
       flex: 1,
     },
+    disabledButton: {
+      opacity: 0.6,
+    },
     fullWidthButton: {
       marginTop: Spacing.lg,
     },

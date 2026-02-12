@@ -20,6 +20,7 @@ export default function GoalDetailScreen() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [goalName, setGoalName] = useState('');
   const [goalDescription, setGoalDescription] = useState('');
@@ -96,17 +97,32 @@ export default function GoalDetailScreen() {
 
   // 保存目标（使用本地 API）
   const handleSaveGoal = async () => {
+    console.log('[GoalDetail] handleSaveGoal called');
+    console.log('[GoalDetail] isSaving:', isSaving);
+
+    if (isSaving) {
+      console.log('[GoalDetail] Already saving, ignoring duplicate call');
+      return;
+    }
+
+    console.log('[GoalDetail] isCreateMode:', isCreateMode);
+    console.log('[GoalDetail] goalName:', goalName);
+
     if (!goalName.trim()) {
       Alert.alert('提示', '请输入目标名称');
       return;
     }
 
+    setIsSaving(true);
+
     try {
       if (isCreateMode) {
+        console.log('[GoalDetail] Creating goal...');
         const newGoal = await localApiService.createGoal({
           name: goalName.trim(),
           description: goalDescription.trim() || null,
         });
+        console.log('[GoalDetail] Goal created:', newGoal);
         router.replace('/goal-detail', { goalId: newGoal.id });
       } else {
         const updatedGoal = await localApiService.updateGoal(params.goalId!, {
@@ -119,6 +135,8 @@ export default function GoalDetailScreen() {
     } catch (error) {
       console.error('Failed to save goal:', error);
       Alert.alert('错误', '保存目标失败');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -278,24 +296,31 @@ export default function GoalDetailScreen() {
 
                 {isCreateMode ? (
                   <TouchableOpacity
-                    style={[styles.saveButton, styles.fullWidthButton]}
+                    style={[styles.saveButton, styles.fullWidthButton, isSaving && styles.disabledButton]}
                     onPress={handleSaveGoal}
+                    disabled={isSaving}
                   >
-                    <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>创建目标</ThemedText>
+                    <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>
+                      {isSaving ? '创建中...' : '创建目标'}
+                    </ThemedText>
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.editButtonGroup}>
                     <TouchableOpacity
                       style={[styles.saveButton, styles.cancelEditButton]}
                       onPress={handleCancelEdit}
+                      disabled={isSaving}
                     >
                       <ThemedText variant="bodyMedium" color={theme.textSecondary}>取消</ThemedText>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.saveButton, styles.saveEditButton]}
+                      style={[styles.saveButton, styles.saveEditButton, isSaving && styles.disabledButton]}
                       onPress={handleSaveGoal}
+                      disabled={isSaving}
                     >
-                      <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>保存</ThemedText>
+                      <ThemedText variant="bodyMedium" color={theme.buttonPrimaryText}>
+                        {isSaving ? '保存中...' : '保存'}
+                      </ThemedText>
                     </TouchableOpacity>
                   </View>
                 )}

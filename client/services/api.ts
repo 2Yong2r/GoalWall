@@ -48,21 +48,28 @@ export class LocalApiService {
     description?: string | null;
     order?: number;
   }): Promise<Goal> {
+    console.log('[LocalApiService] createGoal called with:', data);
     const id = this.generateId();
+    console.log('[LocalApiService] Generated ID:', id);
+    console.log('[LocalApiService] Calling GoalDAL.createGoal...');
+
     await GoalDAL.createGoal({
       id,
       ...data,
     });
 
+    console.log('[LocalApiService] Goal created, triggering sync...');
     // 触发同步
     syncManager.triggerSync();
 
-    return {
+    const result = {
       id,
       ...data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     } as Goal;
+    console.log('[LocalApiService] createGoal result:', result);
+    return result;
   }
 
   /**
