@@ -117,14 +117,6 @@ export const createStyles = (theme: Theme) => {
       alignItems: 'center',
       marginBottom: Spacing.md,
     },
-    addTaskButton: {
-      width: 32,
-      height: 32,
-      borderRadius: BorderRadius.sm,
-      backgroundColor: theme.backgroundTertiary,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
     tasksList: {
       paddingBottom: Spacing.xl,
     },
@@ -197,6 +189,23 @@ export const createStyles = (theme: Theme) => {
     emptyText: {
       marginTop: Spacing.md,
       textAlign: 'center',
+    },
+    // 浮动新增按钮
+    floatingAddButton: {
+      position: 'absolute',
+      right: Spacing.xl,
+      bottom: Spacing['2xl'],
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: theme.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
     },
   });
 };

@@ -354,9 +354,6 @@ export default function GoalDetailScreen() {
               <View style={styles.tasksSection}>
                 <View style={styles.tasksHeader}>
                   <ThemedText variant="h4" color={theme.textPrimary}>任务列表</ThemedText>
-                  <TouchableOpacity onPress={handleAddTask} style={styles.addTaskButton}>
-                    <FontAwesome6 name="plus" size={16} color={theme.primary} />
-                  </TouchableOpacity>
                 </View>
 
                 <FlatList
@@ -369,7 +366,7 @@ export default function GoalDetailScreen() {
                     <View style={styles.emptyContainer}>
                       <FontAwesome6 name="clipboard-list" size={48} color={theme.textMuted} />
                       <ThemedText variant="body" color={theme.textMuted} style={styles.emptyText}>
-                        还没有任务，点击右上角添加
+                        还没有任务，点击右下角添加
                       </ThemedText>
                     </View>
                   }
@@ -378,6 +375,16 @@ export default function GoalDetailScreen() {
             </View>
           )}
         </View>
+
+        {/* 浮动新增按钮 */}
+        {!isEditingOrCreating && (
+          <TouchableOpacity
+            style={styles.floatingAddButton}
+            onPress={handleAddTask}
+          >
+            <FontAwesome6 name="plus" size={24} color="white" />
+          </TouchableOpacity>
+        )}
       </KeyboardAvoidingView>
     </Screen>
   );
