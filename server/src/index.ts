@@ -4,6 +4,7 @@ import goalRouter from "./routes/goals";
 import taskRouter from "./routes/tasks";
 import versionRouter from "./routes/version";
 import todoRouter from "./routes/todos";
+import clearDataRouter from "./routes/clear-data";
 
 const app = express();
 const port = process.env.PORT || 9091;
@@ -28,6 +29,7 @@ app.use('/api/v1/goals', goalRouter);
 app.use('/api/v1/tasks', taskRouter);
 app.use('/api/v1/todos', todoRouter);
 app.use('/api/v1/version', versionRouter);
+app.use('/api/v1/clear-data', clearDataRouter);
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}/`);

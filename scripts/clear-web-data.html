@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除Web端数据</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #DC2626;
+        }
+        .info {
+            background-color: #F3F4F6;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .success {
+            background-color: #10B981;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        #log {
+            background-color: #1F2937;
+            color: #10B981;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>清除Web端数据</h1>
+
+    <div class="info">
+        <p>此工具将清除Web端的所有本地数据，包括：</p>
+        <ul>
+            <li>目标 (Goals)</li>
+            <li>任务 (Tasks)</li>
+            <li>待办 (Todos)</li>
+            <li>任务更新 (Task Updates)</li>
+        </ul>
+        <p><strong>注意：此操作不可恢复，请谨慎操作！</strong></p>
+    </div>
+
+    <button onclick="clearData()">清除所有数据</button>
+    <button onclick="checkData()">检查当前数据</button>
+
+    <div id="result"></div>
+    <div id="log"></div>
+
+    <script>
+        const DB_PREFIX = '@goalwall_db_';
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+        }
+
+        function showResult(message, isSuccess = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="${isSuccess ? 'success' : 'info'}">${message}</div>`;
+        }
+
+        async function checkData() {
+            log('开始检查数据...');
+            
+            try {
+                // 获取所有localStorage中的键
+                const allKeys = Object.keys(localStorage);
+                const dbKeys = allKeys.filter(key => key.startsWith(DB_PREFIX));
+                
+                log(`找到 ${dbKeys.length} 个数据库键`);
+                
+                let totalGoals = 0;
+                let totalTasks = 0;
+                let totalTodos = 0;
+                
+                for (const key of dbKeys) {
+                    const value = localStorage.getItem(key);
+                    if (value) {
+                        const data = JSON.parse(value);
+                        log(`键: ${key}, 记录数: ${data.length}`);
+                        
+                        if (key.includes('_goals')) {
+                            totalGoals += data.length;
+                        } else if (key.includes('_tasks')) {
+                            totalTasks += data.length;
+                        } else if (key.includes('_todos')) {
+                            totalTodos += data.length;
+                        }
+                    }
+                }
+                
+                const message = `当前数据统计：<br>目标: ${totalGoals}<br>任务: ${totalTasks}<br>待办: ${totalTodos}`;
+                showResult(message);
+                log(message);
+            } catch (error) {
+                log(`检查数据失败: ${error.message}`);
+                showResult(`检查数据失败: ${error.message}`);
+            }
+        }
+
+        async function clearData() {
+            if (!confirm('确定要清除所有数据吗？此操作不可恢复！')) {
+                return;
+            }
+            
+            log('开始清除数据...');
+            
+            try {
+                // 获取所有localStorage中的键
+                const allKeys = Object.keys(localStorage);
+                const dbKeys = allKeys.filter(key => key.startsWith(DB_PREFIX));
+                
+                log(`找到 ${dbKeys.length} 个数据库键需要清除`);
+                
+                let clearedCount = 0;
+                
+                for (const key of dbKeys) {
+                    localStorage.removeItem(key);
+                    log(`已清除: ${key}`);
+                    clearedCount++;
+                }
+                
+                log(`清除完成，共清除 ${clearedCount} 个键`);
+                showResult(`清除成功！共清除 ${clearedCount} 个数据文件`, true);
+                
+                // 刷新页面显示
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } catch (error) {
+                log(`清除数据失败: ${error.message}`);
+                showResult(`清除数据失败: ${error.message}`);
+            }
+        }
+
+        // 页面加载时自动检查数据
+        window.onload = function() {
+            log('数据清除工具已加载');
+            checkData();
+        };
+    </script>
+</body>
+</html>

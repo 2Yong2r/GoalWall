@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除目标管理App数据</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .warning-box {
+            background: #FFF3CD;
+            border-left: 4px solid #FFC107;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .warning-box h3 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .warning-box ul {
+            color: #856404;
+            margin-left: 20px;
+            font-size: 14px;
+        }
+        .warning-box li {
+            margin-bottom: 5px;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        button {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-check {
+            background: #667eea;
+            color: white;
+        }
+        .btn-check:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        .btn-clear {
+            background: #EF4444;
+            color: white;
+        }
+        .btn-clear:hover {
+            background: #DC2626;
+            transform: translateY(-2px);
+        }
+        .result-box {
+            background: #F3F4F6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .result-box h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .result-item span:first-child {
+            color: #6B7280;
+            font-weight: 500;
+        }
+        .result-item span:last-child {
+            color: #374151;
+            font-weight: 600;
+        }
+        .log-box {
+            background: #1F2937;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-box h3 {
+            color: #10B981;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        #log {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+        }
+        .log-time {
+            color: #6B7280;
+        }
+        .log-message {
+            color: #10B981;
+        }
+        .log-error {
+            color: #EF4444;
+        }
+        .log-info {
+            color: #3B82F6;
+        }
+        .success-message {
+            background: #10B981;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 清除Web端数据</h1>
+        <p class="subtitle">目标管理App - 数据清除工具</p>
+
+        <div class="warning-box">
+            <h3>⚠️ 重要提示</h3>
+            <ul>
+                <li>此操作将清除所有本地存储的目标、任务和待办数据</li>
+                <li>数据存储在浏览器的localStorage中</li>
+                <li>清除后的数据无法恢复</li>
+                <li>云端数据不受影响，后续会重新同步</li>
+            </ul>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-check" onclick="checkData()">📊 检查数据</button>
+            <button class="btn-clear" onclick="clearData()">🗑️ 清除所有数据</button>
+        </div>
+
+        <div id="result"></div>
+        <div id="log">
+            <div class="log-entry"><span class="log-time">--:--:--</span> <span class="log-info">数据清除工具已就绪</span></div>
+        </div>
+    </div>
+
+    <script>
+        const DB_PREFIX = '@goalwall_db_';
+
+        function log(message, type = 'normal') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logClass = type === 'error' ? 'log-error' : type === 'info' ? 'log-info' : 'log-message';
+            logDiv.innerHTML += `<div class="log-entry"><span class="log-time">[${timestamp}]</span> <span class="${logClass}">${message}</span></div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function showResult(data) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="result-box">
+                    <h3>📈 当前数据统计</h3>
+                    <div class="result-item">
+                        <span>目标 (Goals)</span>
+                        <span>${data.goals} 条</span>
+                    </div>
+                    <div class="result-item">
+                        <span>任务 (Tasks)</span>
+                        <span>${data.tasks} 条</span>
+                    </div>
+                    <div class="result-item">
+                        <span>待办 (Todos)</span>
+                        <span>${data.todos} 条</span>
+                    </div>
+                    <div class="result-item">
+                        <span>总计</span>
+                        <span>${data.total} 条</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showSuccess(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="success-message">✅ ${message}</div>`;
+        }
+
+        async function checkData() {
+            log('正在检查数据...', 'info');
+            
+            try {
+                // 获取所有localStorage中的键
+                const allKeys = Object.keys(localStorage);
+                const dbKeys = allKeys.filter(key => key.startsWith(DB_PREFIX));
+                
+                log(`找到 ${dbKeys.length} 个数据库键`, 'info');
+                
+                let totalGoals = 0;
+                let totalTasks = 0;
+                let totalTodos = 0;
+                
+                for (const key of dbKeys) {
+                    try {
+                        const value = localStorage.getItem(key);
+                        if (value) {
+                            const data = JSON.parse(value);
+                            const count = Array.isArray(data) ? data.length : 0;
+                            log(`📁 ${key.replace(DB_PREFIX, '')}: ${count} 条记录`);
+                            
+                            if (key.includes('_goals')) {
+                                totalGoals += count;
+                            } else if (key.includes('_tasks')) {
+                                totalTasks += count;
+                            } else if (key.includes('_todos')) {
+                                totalTodos += count;
+                            }
+                        }
+                    } catch (e) {
+                        log(`读取 ${key} 失败: ${e.message}`, 'error');
+                    }
+                }
+                
+                const result = {
+                    goals: totalGoals,
+                    tasks: totalTasks,
+                    todos: totalTodos,
+                    total: totalGoals + totalTasks + totalTodos
+                };
+                
+                showResult(result);
+                log(`检查完成！总计 ${result.total} 条数据`, 'info');
+            } catch (error) {
+                log(`检查数据失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearData() {
+            if (!confirm('确定要清除所有本地数据吗？\n\n此操作将删除所有目标、任务和待办数据，且无法恢复！\n\n是否继续？')) {
+                log('操作已取消', 'info');
+                return;
+            }
+            
+            log('开始清除数据...', 'info');
+            
+            try {
+                // 获取所有localStorage中的键
+                const allKeys = Object.keys(localStorage);
+                const dbKeys = allKeys.filter(key => key.startsWith(DB_PREFIX));
+                
+                log(`找到 ${dbKeys.length} 个数据库键需要清除`, 'info');
+                
+                let clearedCount = 0;
+                let clearedGoals = 0;
+                let clearedTasks = 0;
+                let clearedTodos = 0;
+                
+                for (const key of dbKeys) {
+                    try {
+                        const value = localStorage.getItem(key);
+                        if (value) {
+                            const data = JSON.parse(value);
+                            const count = Array.isArray(data) ? data.length : 0;
+                            
+                            if (key.includes('_goals')) {
+                                clearedGoals += count;
+                            } else if (key.includes('_tasks')) {
+                                clearedTasks += count;
+                            } else if (key.includes('_todos')) {
+                                clearedTodos += count;
+                            }
+                        }
+                        
+                        localStorage.removeItem(key);
+                        log(`✅ 已清除: ${key.replace(DB_PREFIX, '')}`);
+                        clearedCount++;
+                    } catch (error) {
+                        log(`清除 ${key} 失败: ${error.message}`, 'error');
+                    }
+                }
+                
+                const totalCleared = clearedGoals + clearedTasks + clearedTodos;
+                log(`清除完成！`, 'info');
+                log(`数据库文件: ${clearedCount} 个`, 'info');
+                log(`数据记录: ${totalCleared} 条 (目标: ${clearedGoals}, 任务: ${clearedTasks}, 待办: ${clearedTodos})`, 'info');
+                
+                showSuccess(`清除成功！共清除 ${clearedCount} 个文件，${totalCleared} 条数据`);
+                
+                // 3秒后刷新页面
+                setTimeout(() => {
+                    log('正在刷新页面...', 'info');
+                    location.reload();
+                }, 3000);
+            } catch (error) {
+                log(`清除数据失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载时自动检查数据
+        window.onload = function() {
+            log('工具加载完成', 'info');
+            setTimeout(checkData, 500);
+        };
+    </script>
+</body>
+</html>
