@@ -130,6 +130,7 @@ class SyncManager {
    */
   private async uploadGoals(): Promise<void> {
     const goals = await getGoalsToSync();
+    console.log(`[Sync] Found ${goals.length} goals to sync`);
 
     for (const goal of goals) {
       try {
@@ -144,6 +145,7 @@ class SyncManager {
 
         if (goal.deleted_at) {
           // 已删除的目标，删除云端数据
+          console.log(`[Sync] Deleting goal: ${goal.id}`);
           await fetch(`${this.backendUrl}/api/v1/goals/${goal.id}`, {
             method: 'DELETE',
           });
@@ -153,7 +155,8 @@ class SyncManager {
           const url = goal.synced_at
             ? `${this.backendUrl}/api/v1/goals/${goal.id}`
             : `${this.backendUrl}/api/v1/goals`;
-
+          
+          console.log(`[Sync] ${method === 'POST' ? 'Creating' : 'Updating'} goal: ${goal.id}`);
           await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
@@ -319,15 +322,19 @@ class SyncManager {
    * 执行完整同步（带超时控制）
    */
   async sync(): Promise<void> {
+    console.log('[Sync] Starting sync...');
+    
     // 检查后端是否可用
     const isAvailable = await this.isBackendAvailable();
     if (!isAvailable) {
+      console.log('[Sync] Backend not available, skipping sync');
       // 后端不可用时静默返回，不设置错误状态
       // 手机在本地开发时无法访问到后端是正常情况
       return;
     }
 
     try {
+      console.log('[Sync] Backend available, starting sync process');
       this.updateState({ status: 'syncing', errorMessage: null });
 
       // 设置超时（10 秒）
@@ -342,6 +349,7 @@ class SyncManager {
       ]);
 
       // 3. 更新同步状态（成功）
+      console.log('[Sync] Sync completed successfully');
       this.updateState({
         status: 'success',
         lastSyncTime: new Date().toISOString(),
@@ -365,13 +373,17 @@ class SyncManager {
    * 执行实际的同步操作
    */
   private async performSync(): Promise<void> {
+    console.log('[Sync] Uploading local changes...');
     // 1. 先上传本地更改
     await this.uploadGoals();
     await this.uploadTasks();
     await this.uploadTodos();
 
+    console.log('[Sync] Downloading from cloud...');
     // 2. 从云端下载数据
     await this.downloadFromCloud();
+    
+    console.log('[Sync] Sync process completed');
   }
 
   /**
