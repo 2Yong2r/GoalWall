@@ -20,19 +20,6 @@ export const createStyles = (theme: Theme) => {
       alignItems: 'center',
       gap: Spacing.md,
     },
-    addButton: {
-      width: 44,
-      height: 44,
-      borderRadius: BorderRadius.md,
-      backgroundColor: theme.primary,
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: theme.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      elevation: 4,
-    },
     listContent: {
       paddingHorizontal: Spacing.lg,
       paddingBottom: Spacing['5xl'],
@@ -124,6 +111,23 @@ export const createStyles = (theme: Theme) => {
     emptyText: {
       marginTop: Spacing.lg,
       textAlign: 'center',
+    },
+    // 浮动新增按钮
+    floatingAddButton: {
+      position: 'absolute',
+      right: Spacing.xl,
+      bottom: Spacing['2xl'],
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: theme.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
     },
   });
 };

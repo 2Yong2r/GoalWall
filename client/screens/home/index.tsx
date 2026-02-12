@@ -259,12 +259,6 @@ export default function HomeScreen() {
           <ThemedText variant="h2" color={theme.textPrimary}>目标墙</ThemedText>
           <View style={styles.headerActions}>
             <SyncStatusIndicator />
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => router.push('/goal-detail', { mode: 'create' })}
-            >
-              <FontAwesome6 name="plus" size={20} color="white" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -285,11 +279,19 @@ export default function HomeScreen() {
             <View style={styles.emptyContainer}>
               <FontAwesome6 name="bullseye" size={64} color={theme.textMuted} />
               <ThemedText variant="body" color={theme.textMuted} style={styles.emptyText}>
-                还没有目标，点击右上角创建一个吧
+                还没有目标，点击右下角创建一个吧
               </ThemedText>
             </View>
           }
         />
+
+        {/* 浮动新增按钮 */}
+        <TouchableOpacity
+          style={styles.floatingAddButton}
+          onPress={() => router.push('/goal-detail', { mode: 'create' })}
+        >
+          <FontAwesome6 name="plus" size={24} color="white" />
+        </TouchableOpacity>
       </View>
     </Screen>
   );
